@@ -1,0 +1,61 @@
+{
+  "identity": {
+    "full_name": "",
+    "nationality": [],
+    "country_of_residence": "",
+    "date_of_birth": "",
+    "contact": {
+      "email": "",
+      "phone": ""
+    }
+  },
+  "targets": {
+    "countries": [],
+    "degree_level": "",
+    "fields_of_study": [],
+    "research_interests": [],
+    "target_universities": [],
+    "intake": "",
+    "schools_per_country": 7,
+    "full_funding_required": false
+  },
+  "academics": {
+    "qualifications": [],
+    "mapped_grades": {
+      "uk_band": "",
+      "us_gpa": "",
+      "is_official": false,
+      "source": ""
+    }
+  },
+  "tests": {
+    "english": {
+      "type": "",
+      "score": "",
+      "date": ""
+    },
+    "standardized": []
+  },
+  "funding": {
+    "budget": "",
+    "needs_scholarship": false,
+    "sponsor": ""
+  },
+  "profile": {
+    "work_experience_hours": 0,
+    "research": [],
+    "extracurriculars": [],
+    "portfolio": false
+  },
+  "pipeline_state": {
+    "intake": "pending",
+    "transcript": "pending",
+    "eligibility": "pending",
+    "university_match": "pending",
+    "scholarship_match": "pending",
+    "funded_positions": "pending",
+    "timeline": "pending",
+    "documents": "pending",
+    "report": "pending"
+  }
+}

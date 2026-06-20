@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studyopportunities/admissions-agent/client_profile.schema.json",
+  "title": "Client Profile",
+  "description": "Shared data contract. Every skill reads from and writes to this. Single source of truth the orchestrator owns.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["identity", "targets", "academics", "tests", "funding", "profile", "pipeline_state"],
+  "properties": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "full_name": { "type": "string" },
+        "nationality": { "type": "array", "items": { "type": "string" } },
+        "country_of_residence": { "type": "string" },
+        "date_of_birth": { "type": "string", "description": "ISO 8601 date (YYYY-MM-DD) or empty" },
+        "contact": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "email": { "type": "string" },
+            "phone": { "type": "string" }
+          }
+        }
+      }
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "countries": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["UK", "US"] }
+        },
+        "degree_level": {
+          "type": "string",
+          "enum": ["undergraduate", "postgraduate_taught", "postgraduate_research", ""]
+        },
+        "fields_of_study": { "type": "array", "items": { "type": "string" } },
+        "research_interests": { "type": "array", "items": { "type": "string" } },
+        "target_universities": { "type": "array", "items": { "type": "string" } },
+        "intake": { "type": "string", "description": "e.g. 'Fall 2026' or empty" },
+        "schools_per_country": { "type": "integer", "minimum": 1, "default": 7 },
+        "full_funding_required": { "type": "boolean" }
+      }
+    },
+    "academics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "qualifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "description": "e.g. 'BSc Computer Science'" },
+              "institution": { "type": "string" },
+              "institution_country": { "type": "string" },
+              "grading_system": { "type": "string", "description": "e.g. 'Nigerian 5.0 CGPA', 'UK honours', 'percentage', 'US 4.0'" },
+              "raw_grade": { "type": "string", "description": "as self-reported / parsed, e.g. '4.52/5.0' or 'First Class'" },
+              "graduation_date": { "type": "string", "description": "ISO date or 'expected YYYY'" },
+              "transcript_path": { "type": "string", "description": "relative path to uploaded file, if any" },
+              "source": {
+                "type": "string",
+                "enum": ["parsed", "self_reported", "confirmed", ""],
+                "description": "parsed = extracted from upload (unconfirmed); confirmed = client verified the value"
+              }
+            }
+          }
+        },
+        "mapped_grades": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "uk_band": { "type": "string", "description": "e.g. 'First / 2:1'" },
+            "us_gpa": { "type": "string", "description": "e.g. '3.7'" },
+            "is_official": {
+              "type": "boolean",
+              "description": "ALWAYS false until an official WES (US) / UK ENIC evaluation exists. A parsed/self-reported mapping is a planning estimate, not official."
+            },
+            "source": { "type": "string", "description": "how the mapping was derived (e.g. 'grade_map.py table lookup')" }
+          }
+        }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "english": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "description": "e.g. 'IELTS', 'TOEFL', 'none yet'" },
+            "score": { "type": "string" },
+            "date": { "type": "string" }
+          }
+        },
+        "standardized": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": { "type": "string", "description": "e.g. 'GRE', 'SAT', 'GMAT'" },
+              "score": { "type": "string" },
+              "date": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "funding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "budget": { "type": "string", "description": "self-funded budget if any, e.g. '$0', '£15,000/yr'" },
+        "needs_scholarship": { "type": "boolean" },
+        "sponsor": { "type": "string", "description": "e.g. 'self', 'family', 'government', 'none'" }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "work_experience_hours": { "type": "integer", "minimum": 0 },
+        "research": { "type": "array", "items": { "type": "string" } },
+        "extracurriculars": { "type": "array", "items": { "type": "string" } },
+        "portfolio": { "type": "boolean" }
+      }
+    },
+    "pipeline_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Stage status. Orchestrator routes to the first stage not 'done'.",
+      "properties": {
+        "intake": { "$ref": "#/$defs/stage_status" },
+        "transcript": { "$ref": "#/$defs/stage_status" },
+        "eligibility": { "$ref": "#/$defs/stage_status" },
+        "university_match": { "$ref": "#/$defs/stage_status" },
+        "scholarship_match": { "$ref": "#/$defs/stage_status" },
+        "funded_positions": { "$ref": "#/$defs/stage_status" },
+        "timeline": { "$ref": "#/$defs/stage_status" },
+        "documents": { "$ref": "#/$defs/stage_status" },
+        "report": { "$ref": "#/$defs/stage_status" }
+      }
+    }
+  },
+  "$defs": {
+    "stage_status": {
+      "type": "string",
+      "enum": ["pending", "in_progress", "done"]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Admissions Agent — Python dependencies (Stages 1–2)
+jsonschema>=4.0      # client_profile.json validation (lib/profile_io.py)
+
+# The agent is question-driven and self-reported only — it never parses transcripts or uploaded
+# documents, so no PDF/OCR dependencies are required.
