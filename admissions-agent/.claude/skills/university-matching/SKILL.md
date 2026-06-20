@@ -36,6 +36,11 @@ funds fully.
      `eligibility` hasn't run for a candidate, invoke `eligibility-assessment` first rather than
      guessing.
    - **funding_attainability** — use `score.py`'s `funding_attainability_from_flags(...)`:
+     - `scholarship_route=True` → funding is via a **portable** award the client can realistically win
+       (e.g. Chevening/Commonwealth for an eligible nationality), usable at any eligible school. Set it
+       from `scholarship-matching`'s *realistic* shortlist. **Essential for UK taught master's**, where
+       universities rarely fund international students themselves — without it every UK PGT school
+       collapses to ~0.05 and the funding axis is meaningless (Stage-5 finding).
      - `funds_internationals=False` → hard down-rank (the "admits but won't fund" case),
      - `need_blind_for_intl` / `meets_full_need_for_intl` (US, from `kb/us/need-blind.md` —
        **verify on the school's own page**) → up-rank,

@@ -1,0 +1,10 @@
+{
+  "_note": "Stage-5 dry run. admit_rate + score bands are ILLUSTRATIVE placeholders (UK PGT admissions are requirement-based, not US-style percentile-competitive). In a live run these come from knowledge-base-update against each program page. applicant_stat = US-GPA-equiv 3.3 (UK 2:1, from grade-maps.md Ghana table).",
+  "applicant_stat": 3.3,
+  "candidates": [
+    {"school": "London School of Hygiene & Tropical Medicine (LSHTM)", "country": "UK", "admit_rate": 0.20, "tier": "target", "admission_probability": 0.17, "source": "ILLUSTRATIVE", "last_verified": "2026-06-20"},
+    {"school": "University of Edinburgh", "country": "UK", "admit_rate": 0.40, "tier": "target", "admission_probability": 0.40, "source": "ILLUSTRATIVE", "last_verified": "2026-06-20"},
+    {"school": "University of Manchester", "country": "UK", "admit_rate": 0.45, "tier": "target", "admission_probability": 0.56, "source": "ILLUSTRATIVE", "last_verified": "2026-06-20"},
+    {"school": "University of Leeds", "country": "UK", "admit_rate": 0.55, "tier": "target", "admission_probability": 0.75, "source": "ILLUSTRATIVE", "last_verified": "2026-06-20"}
+  ]
+}

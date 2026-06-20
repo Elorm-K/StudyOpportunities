@@ -1,0 +1,61 @@
+{
+  "identity": {
+    "full_name": "Ama Mensah",
+    "nationality": ["Ghana"],
+    "country_of_residence": "Ghana",
+    "date_of_birth": "2001-04-12",
+    "contact": { "email": "ama.mensah@example.com", "phone": "+233-XX-XXX-XXXX" }
+  },
+  "targets": {
+    "countries": ["UK"],
+    "degree_level": "postgraduate_taught",
+    "fields_of_study": ["Public Health"],
+    "research_interests": [],
+    "target_universities": [],
+    "intake": "",
+    "schools_per_country": 7,
+    "full_funding_required": true
+  },
+  "academics": {
+    "qualifications": [
+      {
+        "name": "BSc Biological Sciences",
+        "institution": "University of Ghana",
+        "institution_country": "Ghana",
+        "grading_system": "Ghana 4.0",
+        "raw_grade": "3.55/4.0 (Second Class Upper)",
+        "graduation_date": "2024",
+        "transcript_path": "",
+        "source": "self_reported"
+      }
+    ],
+    "mapped_grades": {
+      "uk_band": "2:1",
+      "us_gpa": "3.3",
+      "is_official": false,
+      "source": "kb/grading/grade-maps.md Ghana table (Second Class Upper 3.00-3.59 -> 2:1); grade_map.py returns GradeMapUnavailable for 'Ghana 4.0' by design"
+    }
+  },
+  "tests": {
+    "english": { "type": "IELTS", "score": "7.0", "date": "2026-03" },
+    "standardized": []
+  },
+  "funding": { "budget": "$0", "needs_scholarship": true, "sponsor": "none" },
+  "profile": {
+    "work_experience_hours": 3500,
+    "research": [],
+    "extracurriculars": ["Community health volunteer (2 yrs)", "Student association exec"],
+    "portfolio": false
+  },
+  "pipeline_state": {
+    "intake": "done",
+    "transcript": "done",
+    "eligibility": "done",
+    "university_match": "done",
+    "scholarship_match": "done",
+    "funded_positions": "pending",
+    "timeline": "done",
+    "documents": "done",
+    "report": "in_progress"
+  }
+}

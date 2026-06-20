@@ -61,13 +61,28 @@ def funding_attainability_from_flags(
     need_blind_for_intl: bool = False,
     meets_full_need_for_intl: bool = False,
     fully_funded_route: bool = False,
+    scholarship_route: bool = False,
     base: float = 0.5,
 ) -> float:
     """Derive a 0..1 funding-attainability estimate from boolean signals.
 
     The "admits but won't fund internationals" case collapses toward 0, which is the whole point of
     scoring on the joint metric.
+
+    ``scholarship_route`` (added in Stage-5 tuning): the client realistically holds/can win a
+    **portable** external scholarship usable at any eligible school (e.g. Chevening / Commonwealth for
+    an eligible nationality). This is the dominant funding path for UK *taught* master's, where the
+    university itself rarely funds international students — without it, every UK PGT school collapses to
+    ~0.05 and the funding axis carries no information. Set it from `scholarship-matching`'s realistic
+    (not merely eligible) shortlist. It overrides the funds_internationals collapse because the money
+    is external to the school.
     """
+    if scholarship_route:
+        # portable external scholarship funds at any eligible school; competitive, so not 1.0
+        score = 0.8
+        if fully_funded_route:
+            score += 0.15
+        return _clamp01(score)
     if not funds_internationals:
         return 0.05  # hard down-rank: admission is moot if they won't fund this client
     score = base
@@ -144,3 +159,11 @@ if __name__ == "__main__":
     print(json.dumps([s.as_dict() for s in ranked], indent=2))
     assert ranked[-1].name == "Easy U (won't fund intl)", "won't-fund school must rank last"
     print("\nOK: joint scoring down-ranks the admit-but-won't-fund-internationals school.")
+
+    # Stage-5 tuning: a UK taught-MSc school that doesn't fund intl, but the client holds a portable
+    # scholarship (Chevening/Commonwealth), should NOT collapse — funding is external to the school.
+    no_route = funding_attainability_from_flags(funds_internationals=False)
+    with_route = funding_attainability_from_flags(funds_internationals=False, scholarship_route=True)
+    assert no_route < 0.1 < with_route, "scholarship_route must lift funding above the collapse"
+    print(f"OK: scholarship_route lifts funding {no_route:.2f} -> {with_route:.2f} "
+          "(portable award funds at any eligible school).")
