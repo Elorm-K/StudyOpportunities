@@ -7,3 +7,12 @@ venv/
 
 # OS
 .DS_Store
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Admissions-agent runtime client data (keep only the template)
+admissions-agent/clients/*/
+!admissions-agent/clients/_template/

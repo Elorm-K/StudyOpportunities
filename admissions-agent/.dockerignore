@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.DS_Store
+# Local test/run data — _template is the only client dir that should ship
+clients/*/
+!clients/_template/
+*.md.draft

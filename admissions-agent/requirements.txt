@@ -1,5 +1,13 @@
-# Admissions Agent — Python dependencies (Stages 1–2)
-jsonschema>=4.0      # client_profile.json validation (lib/profile_io.py)
+# Admissions Agent — Python dependencies
+
+jsonschema>=4.0          # client_profile.json validation (lib/profile_io.py)
+
+# Web runtime (server/) — drives the agent headlessly and serves the hosted flow.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9  # form parsing for FastAPI
+claude-agent-sdk>=0.2.106  # spawns the `claude` CLI; the CLI must be on PATH (see server/Dockerfile)
+python-dotenv>=1.0       # local-only .env loading (server/config.py); Railway injects vars directly
 
 # The agent is question-driven and self-reported only — it never parses transcripts or uploaded
 # documents, so no PDF/OCR dependencies are required.

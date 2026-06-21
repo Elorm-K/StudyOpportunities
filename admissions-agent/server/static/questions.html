@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A few quick questions</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1c2430; --muted:#5b6b7c;
+    --line:#dde3ea; --accent:#2f5fe0; --accent-weak:#eaf0ff;
+    --err:#c0392b; --ok:#1e7a46; --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:680px;margin:0 auto;padding:28px 18px 96px}
+  header.page h1{font-size:1.45rem;margin:0 0 6px}
+  header.page p{color:var(--muted);margin:0 0 4px;max-width:60ch}
+  .section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;margin:16px 0;box-shadow:0 1px 2px rgba(20,30,45,.04)}
+  .field{margin:0 0 6px}
+  .field > label.q{display:block;font-weight:600;margin:0 0 5px}
+  .field .hint{display:block;color:var(--muted);font-weight:400;font-size:.86rem;margin:2px 0 7px}
+  .field .req{color:var(--err);font-weight:700;margin-left:2px}
+  input[type=text],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);
+    border-radius:9px;background:#fff;color:var(--ink);font:inherit}
+  textarea{min-height:70px;resize:vertical}
+  .choices{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .choices label{display:inline-flex;align-items:center;gap:9px;font-weight:400;
+    border:1px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer}
+  .choices label:hover{border-color:var(--accent);background:var(--accent-weak)}
+  .choices input{width:auto;accent-color:var(--accent)}
+  .otherwrap{margin-top:8px}
+  .actions{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(246,247,249,0),var(--bg) 38%);
+    padding:18px 0 8px;margin-top:8px}
+  .btn{appearance:none;border:0;border-radius:10px;background:var(--accent);color:#fff;
+    font:600 16px/1 system-ui;padding:14px 20px;cursor:pointer;width:100%}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .formerr{display:none;color:var(--err);background:#fdecea;border:1px solid #f3b4ad;
+    border-radius:9px;padding:10px 12px;margin:0 0 10px;font-size:.9rem}
+  .formerr.show{display:block}
+  .note{color:var(--muted);text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page">
+    <h1>A few quick questions</h1>
+    <p id="intro">Loading…</p>
+  </header>
+  <div class="formerr" id="formerr"></div>
+  <form id="qform"></form>
+  <div class="actions" id="actions" style="display:none">
+    <button type="button" class="btn" id="submit">Send my answers</button>
+  </div>
+  <div class="note" id="note"></div>
+</div>
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var parts = location.pathname.split('/').filter(Boolean); // clients / <slug> / questions
+  var slug = parts[1];
+  var QUESTIONS = [];
+
+  function el(tag, attrs, html){
+    var n = document.createElement(tag);
+    if(attrs) Object.keys(attrs).forEach(function(k){ n.setAttribute(k, attrs[k]); });
+    if(html != null) n.innerHTML = html;
+    return n;
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function renderQuestion(q, i){
+    var sec = el('section', {'class':'section'});
+    var field = el('div', {'class':'field'});
+    var label = el('label', {'class':'q'});
+    label.innerHTML = esc(q.prompt) + (q.required ? ' <span class="req">*</span>' : '');
+    field.appendChild(label);
+    if(q.help){ field.appendChild(el('span', {'class':'hint'}, esc(q.help))); }
+
+    var name = 'q_' + q.id;
+    if(q.type === 'select' || q.type === 'multiselect'){
+      var choices = el('div', {'class':'choices'});
+      var input = (q.type === 'multiselect') ? 'checkbox' : 'radio';
+      (q.options || []).forEach(function(opt){
+        var lab = el('label');
+        lab.innerHTML = '<input type="'+input+'" name="'+name+'" value="'+esc(opt)+'"> ' + esc(opt);
+        choices.appendChild(lab);
+      });
+      if(q.allow_other){
+        var olab = el('label');
+        olab.innerHTML = '<input type="'+input+'" name="'+name+'" value="__other__"> Other';
+        choices.appendChild(olab);
+        var ow = el('div', {'class':'otherwrap'});
+        ow.appendChild(el('input', {'type':'text','id':name+'_other','placeholder':'Type your answer'}));
+        field.appendChild(choices); field.appendChild(ow);
+      } else {
+        field.appendChild(choices);
+      }
+    } else if(q.type === 'boolean'){
+      var c = el('div', {'class':'choices'});
+      c.innerHTML = '<label><input type="radio" name="'+name+'" value="true"> Yes</label>' +
+                    '<label><input type="radio" name="'+name+'" value="false"> No</label>';
+      field.appendChild(c);
+    } else { // text
+      field.appendChild(el('textarea', {'id':name+'_text'}));
+    }
+    sec.appendChild(field);
+    return sec;
+  }
+
+  function collectAnswer(q){
+    var name = 'q_' + q.id;
+    if(q.type === 'text'){
+      var t = $(name+'_text'); return t ? t.value.trim() : '';
+    }
+    if(q.type === 'boolean'){
+      var b = document.querySelector('input[name='+name+']:checked');
+      return b ? (b.value === 'true') : null;
+    }
+    var checked = Array.prototype.slice.call(document.querySelectorAll('input[name='+name+']:checked'));
+    var vals = checked.map(function(c){
+      if(c.value === '__other__'){ var o = $(name+'_other'); return o ? o.value.trim() : ''; }
+      return c.value;
+    }).filter(Boolean);
+    if(q.type === 'multiselect') return vals;
+    return vals.length ? vals[0] : '';
+  }
+
+  function submit(){
+    var errs = [];
+    var answers = {};
+    QUESTIONS.forEach(function(q){
+      var a = collectAnswer(q);
+      var empty = (a === '' || a === null || (Array.isArray(a) && a.length === 0));
+      if(q.required && empty) errs.push(q.prompt);
+      if(!empty) answers[q.id] = a;
+    });
+    var box = $('formerr');
+    if(errs.length){
+      box.textContent = 'Please answer: ' + errs.join('; ');
+      box.classList.add('show'); box.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+    box.classList.remove('show');
+    $('submit').disabled = true; $('submit').textContent = 'Sending…';
+    fetch('/api/clients/' + slug + '/answers', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({answers: answers})
+    }).then(function(r){
+      if(!r.ok) return r.json().then(function(j){ throw new Error(j.detail || 'submit failed'); });
+      return r.json();
+    }).then(function(j){
+      location.href = j.results_url || ('/clients/' + slug + '/results');
+    }).catch(function(e){
+      box.textContent = e.message; box.classList.add('show');
+      $('submit').disabled = false; $('submit').textContent = 'Send my answers';
+    });
+  }
+
+  fetch('/api/clients/' + slug + '/questions').then(function(r){
+    if(!r.ok) return r.json().then(function(j){ throw new Error(j.detail || 'no questions'); });
+    return r.json();
+  }).then(function(doc){
+    QUESTIONS = doc.questions || [];
+    $('intro').textContent = doc.intro || 'A couple of quick things so we search for the right options.';
+    var form = $('qform');
+    QUESTIONS.forEach(function(q, i){ form.appendChild(renderQuestion(q, i)); });
+    $('actions').style.display = 'block';
+    $('submit').addEventListener('click', submit);
+  }).catch(function(e){
+    $('intro').textContent = '';
+    $('note').textContent = 'No questions are pending. ';
+    var a = el('a', {'href':'/clients/' + slug + '/results'}); a.textContent = 'Go to your results →';
+    $('note').appendChild(a);
+  });
+})();
+</script>
+</body>
+</html>

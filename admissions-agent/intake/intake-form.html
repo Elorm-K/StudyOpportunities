@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study-Abroad Intake — Tell us about you</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1c2430; --muted:#5b6b7c;
+    --line:#dde3ea; --accent:#2f5fe0; --accent-weak:#eaf0ff;
+    --warn-bg:#fff6e6; --warn-ink:#8a5b00; --warn-line:#f0d28a;
+    --err:#c0392b; --ok:#1e7a46; --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:720px;margin:0 auto;padding:28px 18px 96px}
+  header.page{margin:8px 0 18px}
+  header.page h1{font-size:1.55rem;margin:0 0 6px}
+  header.page p{color:var(--muted);margin:0;max-width:60ch}
+  .section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 18px 6px;margin:16px 0;box-shadow:0 1px 2px rgba(20,30,45,.04)}
+  .section > h2{font-size:1.05rem;margin:2px 0 2px;display:flex;align-items:baseline;gap:8px}
+  .section > h2 .tag{font:600 11px/1 system-ui;color:var(--accent);background:var(--accent-weak);
+    padding:4px 7px;border-radius:999px;letter-spacing:.02em}
+  .section > .sub{color:var(--muted);font-size:.9rem;margin:0 0 10px}
+  .field{margin:14px 0}
+  .field > label{display:block;font-weight:600;margin:0 0 5px}
+  .field .hint{display:block;color:var(--muted);font-weight:400;font-size:.86rem;margin:2px 0 7px}
+  .field .req{color:var(--err);font-weight:700;margin-left:2px}
+  input[type=text],input[type=email],input[type=tel],input[type=date],
+  input[type=number],select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+    background:#fff;color:var(--ink);font:inherit}
+  textarea{min-height:84px;resize:vertical}
+  select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%235b6b7c' stroke-width='1.6'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  .choices{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:4px}
+  .choices label{display:inline-flex;align-items:center;gap:7px;font-weight:400}
+  .choices input{width:auto;accent-color:var(--accent)}
+  .disclaimer{background:var(--accent-weak);border:1px solid #cfdcff;border-radius:9px;
+    padding:10px 12px;color:#2a3b66;font-size:.88rem;margin:6px 0 4px}
+  .fieldwarn{display:none;background:var(--warn-bg);border:1px solid var(--warn-line);
+    color:var(--warn-ink);border-radius:8px;padding:7px 10px;font-size:.85rem;margin-top:6px}
+  .fieldwarn.show{display:block}
+  [data-branch]{display:none}
+  [data-branch].on{display:block}
+  .actions{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(246,247,249,0) 0%,var(--bg) 38%);
+    padding:18px 0 8px;margin-top:8px}
+  .btn{appearance:none;border:0;border-radius:10px;background:var(--accent);color:#fff;
+    font:600 16px/1 system-ui;padding:14px 20px;cursor:pointer;width:100%}
+  .btn:disabled{opacity:.55;cursor:not-allowed}
+  .formerr{display:none;color:var(--err);background:#fdecea;border:1px solid #f3b4ad;
+    border-radius:9px;padding:10px 12px;margin:0 0 10px;font-size:.9rem}
+  .formerr.show{display:block}
+  .savednote{display:none;color:var(--ok);font-size:.9rem;text-align:center;margin-top:10px}
+  .savednote.show{display:block}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page">
+    <h1>Study-Abroad Intake</h1>
+    <p>This helps us plan your applications. Answer what you can — pick from the menus where they're
+      offered, and type the rest. Questions appear and disappear based on your path, so you only see
+      what's relevant. When you're done, press <strong>Submit</strong> and we'll get started right away.</p>
+  </header>
+
+  <form id="intake" novalidate>
+
+  <!-- A. Goals & targets -->
+  <section class="section">
+    <h2>About your plans <span class="tag">Goals &amp; targets</span></h2>
+
+    <div class="field">
+      <label for="full_name">Your full name <span class="req">*</span></label>
+      <input type="text" id="full_name" name="full_name" autocomplete="name">
+    </div>
+
+    <div class="field">
+      <label>Which countries are you targeting? <span class="req">*</span></label>
+      <span class="hint">Pick one or both.</span>
+      <div class="choices" id="countries">
+        <label><input type="checkbox" name="country" value="UK"> United Kingdom</label>
+        <label><input type="checkbox" name="country" value="US"> United States</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="degree_level">Degree level you're applying for <span class="req">*</span></label>
+      <select id="degree_level" name="degree_level">
+        <option value="">— Select —</option>
+        <option value="undergraduate">Bachelor's (undergraduate)</option>
+        <option value="postgraduate_taught">Master's — taught</option>
+        <option value="postgraduate_research">Master's or PhD — research-based</option>
+      </select>
+      <span class="hint">Research-based covers MRes / MPhil / PhD. This changes which questions you'll see.</span>
+    </div>
+
+    <div class="field">
+      <label for="intake">When do you want to start?</label>
+      <input type="text" id="intake" name="intake" placeholder="e.g. Fall 2026, or 'earliest feasible'">
+    </div>
+
+    <div class="field">
+      <label>Do you need full funding to be able to go? <span class="req">*</span></label>
+      <span class="hint">This single answer reshapes the whole strategy — be honest.</span>
+      <select id="full_funding" name="full_funding">
+        <option value="">— Select —</option>
+        <option value="must">Must have full funding</option>
+        <option value="prefer">Strongly prefer full funding</option>
+        <option value="partial">Can self-fund partly</option>
+        <option value="full_self">Can self-fund fully</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- B. Field & interests -->
+  <section class="section">
+    <h2>Your field <span class="tag">Field &amp; interests</span></h2>
+
+    <div class="field">
+      <label for="field_broad">Broad field of study <span class="req">*</span></label>
+      <input type="text" id="field_broad" name="field_broad" placeholder="e.g. Computer Science, Public Health, Mechanical Engineering">
+    </div>
+
+    <div class="field">
+      <label for="subfield">Specific subfield or specialization</label>
+      <span class="hint">Be specific — not "CS" but "machine learning"; not "engineering" but "fluid dynamics".</span>
+      <input type="text" id="subfield" name="subfield" placeholder="e.g. machine learning, fluid dynamics">
+      <div class="fieldwarn" id="warn_subfield">This looks broad. A more specific answer gives a much better university and scholarship search.</div>
+    </div>
+
+    <!-- research-only -->
+    <div class="field" data-branch="pgr">
+      <label for="research_desc">In 2–3 sentences, what do you want to research?</label>
+      <span class="hint">Name specific problems, methods, or techniques. "RL for sim-to-real robotic manipulation" searches far better than "AI and robots".</span>
+      <textarea id="research_desc" name="research_desc"></textarea>
+      <div class="fieldwarn" id="warn_research">A bit more detail here (a problem, a method) makes the funded-position search much stronger.</div>
+    </div>
+
+    <div class="field" data-branch="pgr">
+      <label for="admired">Any professors, labs, or recent papers whose work you admire?</label>
+      <span class="hint">The strongest single signal for finding actively-recruiting supervisors. If none yet, leave blank — we'll discover them.</span>
+      <textarea id="admired" name="admired"></textarea>
+    </div>
+
+    <div class="field">
+      <label for="target_unis">Any specific universities already in mind?</label>
+      <span class="hint">Comma-separated. Optional.</span>
+      <input type="text" id="target_unis" name="target_unis" placeholder="e.g. University of Leeds, LSHTM">
+    </div>
+  </section>
+
+  <!-- C. Academics -->
+  <section class="section">
+    <h2>Your academics <span class="tag">Self-reported</span></h2>
+    <p class="sub">About your most recent or highest qualification.</p>
+    <div class="disclaimer">The grades you enter here are used as <strong>planning estimates</strong>.
+      Official transcripts and credential evaluations (WES for the US / UK ENIC) come later, at
+      application time — you don't need them now.</div>
+
+    <div class="field">
+      <label for="qual_name">Your qualification <span class="req">*</span></label>
+      <span class="hint">Degree + field, and whether it's completed or in progress.</span>
+      <input type="text" id="qual_name" name="qual_name" placeholder="e.g. BSc Computer Science (in progress)">
+    </div>
+
+    <div class="pair">
+      <div class="field">
+        <label for="institution">Institution</label>
+        <input type="text" id="institution" name="institution" placeholder="e.g. University of Ghana">
+      </div>
+      <div class="field">
+        <label for="institution_country">Country</label>
+        <input type="text" id="institution_country" name="institution_country" placeholder="e.g. Ghana">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="grading_system">What grading system does it use? <span class="req">*</span></label>
+      <select id="grading_system" name="grading_system">
+        <option value="">— Select —</option>
+        <option value="percentage">Percentage out of 100</option>
+        <option value="CGPA 10">CGPA out of 10</option>
+        <option value="CGPA 4">CGPA out of 4</option>
+        <option value="US 4.0">GPA out of 4.0</option>
+        <option value="Nigerian 5.0 CGPA">CGPA out of 5 (e.g. Nigerian)</option>
+        <option value="UK honours">UK class (First, 2:1, 2:2…)</option>
+        <option value="IB">IB points</option>
+        <option value="A-levels">A-levels</option>
+        <option value="WAEC/other">WAEC / other</option>
+      </select>
+    </div>
+
+    <div class="field" data-branch="grading_other">
+      <label for="grading_other">Name your grading system</label>
+      <input type="text" id="grading_other" name="grading_other" placeholder="describe the grading scale">
+    </div>
+
+    <div class="field">
+      <label for="raw_grade">Your actual result in that system <span class="req">*</span></label>
+      <span class="hint">Enter it as-is — don't convert. e.g. 3.6/4.0, 68%, First Class, 8.2/10, ABB.</span>
+      <input type="text" id="raw_grade" name="raw_grade">
+      <div class="fieldwarn" id="warn_grade">This result doesn't look like the grading system you picked — please double-check they match.</div>
+    </div>
+
+    <div class="field">
+      <label for="grad_date">Graduation date (or expected)</label>
+      <input type="text" id="grad_date" name="grad_date" placeholder="e.g. 2024-07, or 'expected 2026'">
+    </div>
+  </section>
+
+  <!-- D. Tests -->
+  <section class="section">
+    <h2>Tests <span class="tag">If taken</span></h2>
+
+    <div class="field">
+      <label for="eng_type">English proficiency test</label>
+      <select id="eng_type" name="eng_type">
+        <option value="">— Select —</option>
+        <option value="IELTS">IELTS</option>
+        <option value="TOEFL">TOEFL</option>
+        <option value="Duolingo">Duolingo</option>
+        <option value="PTE">PTE</option>
+        <option value="not yet">Not yet</option>
+        <option value="exempt">Exempt (degree taught in English)</option>
+      </select>
+    </div>
+    <div class="pair" data-branch="eng_score">
+      <div class="field"><label for="eng_score">Score</label>
+        <input type="text" id="eng_score" name="eng_score" placeholder="e.g. 7.5"></div>
+      <div class="field"><label for="eng_date">Date taken</label>
+        <input type="text" id="eng_date" name="eng_date" placeholder="e.g. 2025-03"></div>
+    </div>
+
+    <!-- US undergrad: SAT/ACT -->
+    <div data-branch="sat">
+      <div class="field">
+        <label for="sat_type">SAT or ACT?</label>
+        <select id="sat_type" name="sat_type">
+          <option value="">— Select —</option>
+          <option value="SAT">SAT</option>
+          <option value="ACT">ACT</option>
+          <option value="not yet">Not yet</option>
+          <option value="test-optional">Applying test-optional</option>
+        </select>
+      </div>
+      <div class="field"><label for="sat_score">Score &amp; date (if taken)</label>
+        <input type="text" id="sat_score" name="sat_score" placeholder="e.g. 1480, 2025-05"></div>
+    </div>
+
+    <!-- US grad: GRE/GMAT -->
+    <div data-branch="gre">
+      <div class="field">
+        <label for="gre_type">GRE or GMAT?</label>
+        <select id="gre_type" name="gre_type">
+          <option value="">— Select —</option>
+          <option value="GRE">GRE</option>
+          <option value="GMAT">GMAT</option>
+          <option value="not yet">Not yet</option>
+          <option value="waived">My programs waive it</option>
+        </select>
+        <span class="hint">Many US grad programs have dropped this — confirm per program.</span>
+      </div>
+      <div class="field"><label for="gre_score">Score &amp; date (if taken)</label>
+        <input type="text" id="gre_score" name="gre_score" placeholder="e.g. 320, 2025-04"></div>
+    </div>
+  </section>
+
+  <!-- E. Experience & funding -->
+  <section class="section">
+    <h2>Experience &amp; funding <span class="tag">Background</span></h2>
+
+    <div class="field" data-branch="uk">
+      <label for="work_years">Years of full-time work experience</label>
+      <span class="hint">Some UK scholarships (e.g. Chevening) require about 2 years.</span>
+      <input type="number" id="work_years" name="work_years" min="0" step="0.5" placeholder="e.g. 3">
+    </div>
+
+    <div class="field" data-branch="pgr">
+      <label for="research_exp">Research experience</label>
+      <span class="hint">Projects, thesis, publications, RA/lab work — briefly.</span>
+      <textarea id="research_exp" name="research_exp"></textarea>
+    </div>
+
+    <div class="field" data-branch="us">
+      <label for="extracurriculars">Notable extracurriculars, leadership, or activities</label>
+      <span class="hint">US admissions weigh these. Comma-separated or a short list.</span>
+      <textarea id="extracurriculars" name="extracurriculars"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Will you have a portfolio?</label>
+      <span class="hint">Only relevant for arts / design / architecture fields.</span>
+      <div class="choices">
+        <label><input type="radio" name="portfolio" value="yes"> Yes</label>
+        <label><input type="radio" name="portfolio" value="no"> No / not applicable</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="nationality">Your nationality / citizenship <span class="req">*</span></label>
+      <span class="hint">List all if you hold more than one (comma-separated). Decisive for scholarship eligibility.</span>
+      <input type="text" id="nationality" name="nationality" placeholder="e.g. Ghanaian">
+    </div>
+
+    <div class="field">
+      <label for="residence">Country of residence (if different)</label>
+      <input type="text" id="residence" name="residence" placeholder="e.g. Ghana">
+    </div>
+
+    <div class="field" data-branch="contrib">
+      <label for="budget">Roughly what can you or your family contribute per year?</label>
+      <span class="hint">A rough figure is fine — it helps us judge realistic options.</span>
+      <input type="text" id="budget" name="budget" placeholder="e.g. $5,000/yr, or £0">
+    </div>
+
+    <div class="field">
+      <label for="sponsor">Who is funding you?</label>
+      <select id="sponsor" name="sponsor">
+        <option value="">— Select —</option>
+        <option value="self">Self</option>
+        <option value="family">Family</option>
+        <option value="government">Government</option>
+        <option value="none">None / seeking funding</option>
+      </select>
+    </div>
+
+    <div class="pair">
+      <div class="field"><label for="email">Best email</label>
+        <input type="email" id="email" name="email" autocomplete="email"></div>
+      <div class="field"><label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel"></div>
+    </div>
+    <div class="field">
+      <label for="dob">Date of birth</label>
+      <input type="date" id="dob" name="dob">
+    </div>
+  </section>
+
+  <div class="formerr" id="formerr"></div>
+  <div class="actions">
+    <button type="button" class="btn" id="submit">Submit</button>
+    <button type="button" class="btn" id="download"
+      style="margin-top:10px;background:transparent;color:var(--accent);border:1px solid var(--accent)">Download my answers instead</button>
+    <div class="savednote" id="savednote">Saved. Please send us the downloaded file.</div>
+  </div>
+  </form>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var val = function(id){ var el=$(id); return el ? el.value.trim() : ""; };
+
+  function checkedCountries(){
+    return Array.prototype.slice.call(document.querySelectorAll('input[name=country]:checked'))
+      .map(function(c){ return c.value; });
+  }
+  function radio(name){
+    var el = document.querySelector('input[name='+name+']:checked');
+    return el ? el.value : "";
+  }
+  function show(branch, on){
+    Array.prototype.slice.call(document.querySelectorAll('[data-branch='+branch+']'))
+      .forEach(function(el){ el.classList.toggle('on', !!on); });
+  }
+
+  // ---- Live branching, mirroring the question-bank branch tags ----
+  function applyBranches(){
+    var level = val('degree_level');
+    var countries = checkedCountries();
+    var isUK = countries.indexOf('UK') > -1;
+    var isUS = countries.indexOf('US') > -1;
+    var isUG = level === 'undergraduate';
+    var isPGT = level === 'postgraduate_taught';
+    var isPGR = level === 'postgraduate_research';
+    var fullFunding = val('full_funding');
+
+    show('pgr', isPGR);                                  // B research questions, research experience
+    show('uk', isUK);                                    // UK work-experience (scholarship)
+    show('us', isUS);                                    // US extracurriculars
+    show('sat', isUS && isUG);                           // SAT/ACT
+    show('gre', isUS && (isPGT || isPGR));               // GRE/GMAT
+    show('eng_score', ['IELTS','TOEFL','Duolingo','PTE'].indexOf(val('eng_type')) > -1);
+    show('grading_other', val('grading_system') === 'WAEC/other');
+    // Contribution only matters when they're not relying solely on full funding
+    show('contrib', fullFunding !== '' && fullFunding !== 'must');
+  }
+
+  // ---- Soft (non-blocking) warnings ----
+  var VAGUE = {'cs':1,'ai':1,'engineering':1,'science':1,'biology':1,'physics':1,'maths':1,
+    'math':1,'business':1,'law':1,'medicine':1,'computer science':1,'arts':1,'economics':1};
+  function isVague(s){
+    if(!s) return false;
+    var t = s.toLowerCase().trim();
+    return VAGUE[t] === 1 || t.split(/\s+/).length < 2 && t.length < 5;
+  }
+  function gradeMismatch(system, grade){
+    if(!system || !grade) return false;
+    var g = grade.toLowerCase();
+    var hasPct = /%/.test(g) || /\b\d{2,3}\b/.test(g) && !/\//.test(g);
+    var hasUK = /(first|2:1|2:2|2\.1|2\.2|third|upper|lower second)/.test(g);
+    var num = parseFloat((g.match(/(\d+(\.\d+)?)/)||[])[1]);
+    switch(system){
+      case 'UK honours': return !hasUK;                                   // expect a class
+      case 'percentage': return /[a-z]/.test(g) && !/%/.test(g);          // expect a number/%
+      case 'US 4.0':     return !isNaN(num) && num > 4.0 || hasUK;
+      case 'CGPA 4':     return !isNaN(num) && num > 4.0 || hasUK;
+      case 'CGPA 10':    return !isNaN(num) && num > 10.0 || hasUK;
+      case 'Nigerian 5.0 CGPA': return !isNaN(num) && num > 5.0 || hasUK;
+      default: return false;
+    }
+  }
+  function applyWarnings(){
+    $('warn_subfield').classList.toggle('show', isVague(val('subfield')) && val('subfield') !== '');
+    var rEl = document.querySelector('[data-branch=pgr]');
+    var pgrOn = rEl && rEl.classList.contains('on');
+    $('warn_research').classList.toggle('show', pgrOn && val('research_desc') !== '' && val('research_desc').length < 40);
+    $('warn_grade').classList.toggle('show', gradeMismatch(val('grading_system'), val('raw_grade')));
+  }
+
+  // ---- Build the schema-shaped client_profile.json ----
+  function splitList(s){
+    return s ? s.split(',').map(function(x){return x.trim();}).filter(Boolean) : [];
+  }
+  function standardizedTests(){
+    var out = [];
+    var sat = $('sat_type'), gre = $('gre_type');
+    var satOn = document.querySelector('[data-branch=sat]');
+    var greOn = document.querySelector('[data-branch=gre]');
+    if(satOn && satOn.classList.contains('on') && val('sat_type') && ['not yet','test-optional'].indexOf(val('sat_type'))<0)
+      out.push({type: val('sat_type'), score: val('sat_score'), date: ""});
+    if(greOn && greOn.classList.contains('on') && val('gre_type') && ['not yet','waived'].indexOf(val('gre_type'))<0)
+      out.push({type: val('gre_type'), score: val('gre_score'), date: ""});
+    return out;
+  }
+  function fundingNeedsScholarship(){
+    var f = val('full_funding');
+    return f === 'must' || f === 'prefer';
+  }
+  function gradingSystemValue(){
+    return val('grading_system') === 'WAEC/other' && val('grading_other')
+      ? val('grading_other') : val('grading_system');
+  }
+  function researchInterests(){
+    // research_interests holds subfield + the research description + admired labs (PGR)
+    var rEl = document.querySelector('[data-branch=pgr]');
+    var pgr = rEl && rEl.classList.contains('on');
+    var arr = [];
+    if(val('subfield')) arr.push(val('subfield'));
+    if(pgr && val('research_desc')) arr.push(val('research_desc'));
+    if(pgr && val('admired')) arr.push('Admired labs/PIs: ' + val('admired'));
+    return arr;
+  }
+
+  function buildProfile(){
+    var hours = val('work_years') ? Math.round(parseFloat(val('work_years')) * 1800) : 0;
+    return {
+      identity: {
+        full_name: val('full_name'),
+        nationality: splitList(val('nationality')),
+        country_of_residence: val('residence'),
+        date_of_birth: val('dob'),
+        contact: { email: val('email'), phone: val('phone') }
+      },
+      targets: {
+        countries: checkedCountries(),
+        degree_level: val('degree_level'),
+        fields_of_study: splitList(val('field_broad')),
+        research_interests: researchInterests(),
+        target_universities: splitList(val('target_unis')),
+        intake: val('intake'),
+        schools_per_country: 7,
+        full_funding_required: val('full_funding') === 'must'
+      },
+      academics: {
+        qualifications: [{
+          name: val('qual_name'),
+          institution: val('institution'),
+          institution_country: val('institution_country'),
+          grading_system: gradingSystemValue(),
+          raw_grade: val('raw_grade'),
+          graduation_date: val('grad_date'),
+          transcript_path: "",
+          source: "self_reported"
+        }],
+        mapped_grades: { uk_band: "", us_gpa: "", is_official: false, source: "" }
+      },
+      tests: {
+        english: { type: val('eng_type'), score: val('eng_score'), date: val('eng_date') },
+        standardized: standardizedTests()
+      },
+      funding: {
+        budget: val('budget'),
+        needs_scholarship: fundingNeedsScholarship(),
+        sponsor: val('sponsor')
+      },
+      profile: {
+        work_experience_hours: isNaN(hours) ? 0 : hours,
+        research: val('research_exp') ? [val('research_exp')] : [],
+        extracurriculars: splitList(val('extracurriculars')),
+        portfolio: radio('portfolio') === 'yes'
+      },
+      pipeline_state: {
+        intake: "pending", transcript: "pending", eligibility: "pending",
+        university_match: "pending", scholarship_match: "pending",
+        funded_positions: "pending", timeline: "pending",
+        documents: "pending", report: "pending"
+      }
+    };
+  }
+
+  // ---- Hard validation (routing-critical only) ----
+  function validate(){
+    var errs = [];
+    if(!val('full_name')) errs.push('your full name');
+    if(checkedCountries().length === 0) errs.push('at least one target country');
+    if(!val('degree_level')) errs.push('your degree level');
+    if(!val('full_funding')) errs.push('your funding need');
+    if(!val('nationality')) errs.push('your nationality');
+    return errs;
+  }
+
+  function slug(name){
+    return (name||'client').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'client';
+  }
+
+  function download(){
+    var errs = validate();
+    var box = $('formerr');
+    if(errs.length){
+      box.textContent = 'Before downloading, please fill in: ' + errs.join(', ') + '.';
+      box.classList.add('show');
+      box.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    box.classList.remove('show');
+    var profile = buildProfile();
+    var blob = new Blob([JSON.stringify(profile, null, 2)], {type:'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'client_profile.json';            // (for ' + slug(profile.identity.full_name) + ')
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    $('savednote').textContent = 'Saved as client_profile.json (for ' + slug(profile.identity.full_name) + '). Please send us this file.';
+    $('savednote').classList.add('show');
+  }
+
+  function submit(){
+    var errs = validate();
+    var box = $('formerr');
+    if(errs.length){
+      box.textContent = 'Before submitting, please fill in: ' + errs.join(', ') + '.';
+      box.classList.add('show');
+      box.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    box.classList.remove('show');
+    var btn = $('submit');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    fetch('/api/intake', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(buildProfile())
+    }).then(function(r){
+      if(!r.ok) return r.json().then(function(j){ throw new Error(j.detail || 'submission failed'); });
+      return r.json();
+    }).then(function(j){
+      location.href = j.results_url;
+    }).catch(function(e){
+      box.textContent = 'Could not submit: ' + e.message + '. You can use "Download my answers instead" and send us the file.';
+      box.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Submit';
+    });
+  }
+
+  // ---- Wire up ----
+  document.addEventListener('input', function(){ applyBranches(); applyWarnings(); });
+  document.addEventListener('change', function(){ applyBranches(); applyWarnings(); });
+  $('submit').addEventListener('click', submit);
+  $('download').addEventListener('click', download);
+  applyBranches(); applyWarnings();
+})();
+</script>
+</body>
+</html>
