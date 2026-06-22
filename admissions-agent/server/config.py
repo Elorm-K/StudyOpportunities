@@ -43,6 +43,14 @@ MAX_BUDGET_USD_INTAKE = float(os.environ.get("MAX_BUDGET_USD_INTAKE", "1.50"))
 MAX_BUDGET_USD_RESEARCH = float(os.environ.get("MAX_BUDGET_USD_RESEARCH", "12.0"))
 MAX_TURNS = int(os.environ.get("MAX_TURNS", "300"))
 
+# Wall-clock caps per phase. A hung SDK run trips these and surfaces as an ERROR the
+# applicant can see, instead of an eternal spinner.
+MAX_RUN_SECONDS_INTAKE = int(os.environ.get("MAX_RUN_SECONDS_INTAKE", "300"))
+MAX_RUN_SECONDS_RESEARCH = int(os.environ.get("MAX_RUN_SECONDS_RESEARCH", "1800"))
+
+# How many agent phases may run concurrently across all clients (worker-thread pool size).
+MAX_CONCURRENT_RUNS = int(os.environ.get("MAX_CONCURRENT_RUNS", "4"))
+
 
 def client_dir(slug: str) -> Path:
     return CLIENTS_DIR / slug

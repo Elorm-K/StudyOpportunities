@@ -1,7 +1,13 @@
-"""Background job orchestration: launch the two phases as asyncio tasks, drive status
-transitions, and resume in-flight runs after a restart.
+"""Background job orchestration: launch the two phases on a worker thread pool, drive
+status transitions, and resume in-flight runs after a restart.
 
-In-process asyncio tasks (not RQ/Redis) — appropriate for a single-instance first test.
+Each phase runs in its OWN thread with its OWN event loop (via ``asyncio.run``), never on
+uvicorn's request loop. The Claude Agent SDK's ``query()`` does enough synchronous/CPU work
+between awaits (message parsing, session-store I/O, subprocess calls) that running it on the
+HTTP event loop starves request handling — the submit POST or the status polls hang for the
+whole multi-minute run. Off-loop worker threads keep the server responsive.
+
+In-process threads (not RQ/Redis) — appropriate for a single-instance first test.
 Crash-resumability lives in pipeline_state + status.json on the persistent volume: the boot
 sweep relaunches Phase B for any client left mid-run (re-running done stages is a no-op per
 CLAUDE.md routing).
@@ -11,6 +17,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from concurrent.futures import Future, ThreadPoolExecutor
+from typing import Any, Callable, Coroutine
 
 from lib import profile_io
 
@@ -19,26 +27,42 @@ from .client_store import get_lock
 
 log = logging.getLogger("admissions.jobs")
 
-# Keep strong refs so tasks aren't garbage-collected mid-flight.
-_TASKS: set[asyncio.Task] = set()
+# A bounded pool of worker threads, each running one agent phase to completion in its own
+# event loop. Capacity caps concurrent in-flight clients (the SDK runs are expensive).
+_POOL = ThreadPoolExecutor(max_workers=config.MAX_CONCURRENT_RUNS, thread_name_prefix="agent")
+# Keep strong refs so Futures aren't garbage-collected mid-flight.
+_FUTURES: set[Future] = set()
 
 
-def _spawn(coro) -> None:
-    task = asyncio.create_task(coro)
-    _TASKS.add(task)
-    task.add_done_callback(_TASKS.discard)
+def _spawn(coro_fn: Callable[[], Coroutine[Any, Any, None]], label: str) -> None:
+    """Run an async job flow to completion on a worker thread (its own event loop)."""
+
+    def _runner() -> None:
+        asyncio.run(coro_fn())
+
+    fut = _POOL.submit(_runner)
+    _FUTURES.add(fut)
+
+    def _done(f: Future) -> None:
+        _FUTURES.discard(f)
+        exc = f.exception()
+        if exc is not None:  # a crash before the flow's own try/except could otherwise vanish
+            log.error("job %s crashed: %r", label, exc)
+
+    fut.add_done_callback(_done)
 
 
 def start_intake(slug: str) -> None:
-    _spawn(_intake_flow(slug))
+    _spawn(lambda: _intake_flow(slug), f"intake:{slug}")
 
 
 def start_research(slug: str) -> None:
-    _spawn(_research_flow(slug))
+    _spawn(lambda: _research_flow(slug), f"research:{slug}")
 
 
 async def _intake_flow(slug: str) -> None:
-    async with get_lock(slug):
+    log.info("intake start: %s", slug)
+    with get_lock(slug):
         state.write_status(slug, state.RUNNING_INTAKE, message="Reviewing your answers…")
         try:
             cost = await runner.run_intake(slug)
@@ -51,16 +75,19 @@ async def _intake_flow(slug: str) -> None:
         if state.questions_valid(questions):
             intro = (questions or {}).get("intro") or "A couple of quick questions to sharpen your search."
             state.write_status(slug, state.AWAITING_ANSWERS, message=intro, cost_usd=cost)
+            log.info("intake done (awaiting answers): %s", slug)
             return
         # No (valid) questions -> record intake cost, then chain straight into research.
         state.write_status(slug, state.RUNNING_INTAKE, message="Starting your research…", cost_usd=cost)
 
-    # Released the lock; chain Phase B as its own task so it re-acquires cleanly.
+    # Released the lock; chain Phase B as its own job so it re-acquires cleanly.
+    log.info("intake done (chaining research): %s", slug)
     start_research(slug)
 
 
 async def _research_flow(slug: str) -> None:
-    async with get_lock(slug):
+    log.info("research start: %s", slug)
+    with get_lock(slug):
         state.write_status(slug, state.RUNNING_RESEARCH, message="Researching universities, scholarships, and a plan for you…")
         try:
             cost = await runner.run_research(slug)
@@ -81,6 +108,7 @@ async def _research_flow(slug: str) -> None:
                 state.write_status(slug, state.DONE, message="Your report is ready.", cost_usd=cost)
             else:
                 state.write_status(slug, state.ERROR, error="No final report was produced.", message="Research finished but no report was produced.", cost_usd=cost)
+    log.info("research done: %s ($%.4f)", slug, cost)
 
 
 def resume_sweep() -> None:
