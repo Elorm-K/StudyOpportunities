@@ -30,8 +30,11 @@ The agent itself lives under [`admissions-agent/`](admissions-agent/). The HF-sp
    ```
 3. In the Space **Settings → Variables and secrets**, add:
    - `ANTHROPIC_API_KEY` (secret, **required** — no logged-in CLI on the Space)
-   - `OPERATOR_TOKEN` (secret, required for the report-approval gate)
-   - optional overrides: `CLAUDE_MODEL`, `MAX_BUDGET_USD_INTAKE`, `MAX_BUDGET_USD_RESEARCH`, `MAX_TURNS`
+   - optional overrides: `CLAUDE_MODEL`, `MAX_BUDGET_USD_INTAKE`, `MAX_BUDGET_USD_RESEARCH`,
+     `MAX_TURNS`, `MAX_RUN_SECONDS_INTAKE`, `MAX_RUN_SECONDS_RESEARCH`, `MAX_CONCURRENT_RUNS`
+   - **Report approval is OFF by default** (`APPROVAL_REQUIRED=false`): reports auto-release
+     to the applicant. To require human approval instead, set `APPROVAL_REQUIRED=true` **and**
+     `OPERATOR_TOKEN` (the operator approval endpoints are disabled without a token).
 4. The Space builds the Dockerfile and serves on `app_port: 8000`. Public URL: `https://<username>-<space>.hf.space`.
 
 ## Notes / caveats
