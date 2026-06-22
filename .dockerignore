@@ -1,0 +1,13 @@
+# Build context is the repo root (HF Spaces). Keep the image lean and never ship runtime client data.
+**/__pycache__/
+**/*.pyc
+.git/
+.venv/
+venv/
+.DS_Store
+.env
+.env.*
+
+# Runtime client data — keep only the template (real clients live on the ephemeral /data dir)
+admissions-agent/clients/*/
+!admissions-agent/clients/_template/
