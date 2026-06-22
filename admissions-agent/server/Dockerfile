@@ -28,9 +28,11 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # The whole agent (CLAUDE.md, .claude/skills, lib, schema, intake, kb, clients/_template, server)
 COPY . /app/
 
+# APPROVAL_REQUIRED=false auto-releases the report to the applicant (no operator gate).
+# Set it to "true" as a service env var + provide OPERATOR_TOKEN to re-enable human approval.
 ENV AGENT_DIR=/app \
     DATA_DIR=/data \
-    APPROVAL_REQUIRED=true \
+    APPROVAL_REQUIRED=false \
     PYTHONUNBUFFERED=1
 
 # Verify the CLI is reachable at build time (fails the build early if the install path changed).

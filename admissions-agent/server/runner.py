@@ -11,6 +11,7 @@ so the agent loads ``CLAUDE.md`` + ``.claude/skills/`` exactly as it does intera
 
 from __future__ import annotations
 
+import asyncio
 import logging
 
 from claude_agent_sdk import (
@@ -134,8 +135,8 @@ def _options(max_budget_usd: float) -> ClaudeAgentOptions:
     )
 
 
-async def _run(prompt: str, max_budget_usd: float, label: str) -> float:
-    """Run one SDK query to completion. Returns the run cost in USD. Raises on failure."""
+async def _query_to_completion(prompt: str, max_budget_usd: float, label: str) -> float:
+    """Drive one SDK query to its ResultMessage. Returns the run cost in USD. Raises on failure."""
     options = _options(max_budget_usd)
     cost = 0.0
     result_seen = False
@@ -157,12 +158,32 @@ async def _run(prompt: str, max_budget_usd: float, label: str) -> float:
     return cost
 
 
+async def _run(prompt: str, max_budget_usd: float, timeout_s: int, label: str) -> float:
+    """Run one SDK query under a wall-clock timeout. A hung run raises TimeoutError so the
+    caller surfaces an ERROR instead of leaving the applicant on an eternal spinner."""
+    log.info("[%s] starting (budget=$%.2f, timeout=%ds)", label, max_budget_usd, timeout_s)
+    try:
+        return await asyncio.wait_for(_query_to_completion(prompt, max_budget_usd, label), timeout=timeout_s)
+    except asyncio.TimeoutError as exc:
+        raise RuntimeError(f"{label} timed out after {timeout_s}s") from exc
+
+
 async def run_intake(slug: str) -> float:
     """Phase A. Returns run cost."""
-    return await _run(PHASE_A_PROMPT.replace("__SLUG__", slug), config.MAX_BUDGET_USD_INTAKE, f"intake:{slug}")
+    return await _run(
+        PHASE_A_PROMPT.replace("__SLUG__", slug),
+        config.MAX_BUDGET_USD_INTAKE,
+        config.MAX_RUN_SECONDS_INTAKE,
+        f"intake:{slug}",
+    )
 
 
 async def run_research(slug: str) -> float:
     """Phase B. Returns run cost."""
     template = PHASE_B_PROMPT_APPROVAL if config.APPROVAL_REQUIRED else PHASE_B_PROMPT_AUTO
-    return await _run(template.replace("__SLUG__", slug), config.MAX_BUDGET_USD_RESEARCH, f"research:{slug}")
+    return await _run(
+        template.replace("__SLUG__", slug),
+        config.MAX_BUDGET_USD_RESEARCH,
+        config.MAX_RUN_SECONDS_RESEARCH,
+        f"research:{slug}",
+    )

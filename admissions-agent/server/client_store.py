@@ -1,16 +1,16 @@
 """Create a client folder from the template and write its validated profile.
 
 All profile validation goes through the existing ``lib/profile_io.py`` — never
-reimplemented here. Per-client async locks serialize the SDK run against the
-answers-merge so they can't interleave for the same client.
+reimplemented here. Per-client thread locks serialize the SDK run (which runs on a worker
+thread, see ``jobs.py``) so two phases for the same client can't interleave.
 """
 
 from __future__ import annotations
 
-import asyncio
 import re
 import secrets
 import shutil
+import threading
 from typing import Any
 
 # admissions-agent/ is on sys.path (uvicorn runs from there), so `lib` imports cleanly.
@@ -18,15 +18,17 @@ from lib import profile_io
 
 from . import config
 
-_LOCKS: dict[str, asyncio.Lock] = {}
+_LOCKS: dict[str, threading.Lock] = {}
+_LOCKS_GUARD = threading.Lock()  # guards first-creation of a per-slug lock across threads
 
 
-def get_lock(slug: str) -> asyncio.Lock:
-    lock = _LOCKS.get(slug)
-    if lock is None:
-        lock = asyncio.Lock()
-        _LOCKS[slug] = lock
-    return lock
+def get_lock(slug: str) -> threading.Lock:
+    with _LOCKS_GUARD:
+        lock = _LOCKS.get(slug)
+        if lock is None:
+            lock = threading.Lock()
+            _LOCKS[slug] = lock
+        return lock
 
 
 def _slugify(name: str) -> str:
