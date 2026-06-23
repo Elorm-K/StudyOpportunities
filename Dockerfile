@@ -30,9 +30,13 @@ COPY admissions-agent/ /app/
 
 # APPROVAL_REQUIRED=false auto-releases the report to the applicant (no operator gate).
 # Set it to "true" as a Space secret + provide OPERATOR_TOKEN to re-enable human approval.
+# IS_SANDBOX=1: the container runs as root, and the `claude` CLI refuses
+# --permission-mode bypassPermissions as root unless it knows it's sandboxed. This is that
+# signal — without it the agent subprocess exits 1 at startup and every run errors instantly.
 ENV AGENT_DIR=/app \
     DATA_DIR=/data \
     APPROVAL_REQUIRED=false \
+    IS_SANDBOX=1 \
     PYTHONUNBUFFERED=1
 
 # Verify the CLI is reachable at build time (fails the build early if the install path changed).
