@@ -7,6 +7,7 @@ fastapi>=0.110
 uvicorn[standard]>=0.29
 python-multipart>=0.0.9  # form parsing for FastAPI
 claude-agent-sdk>=0.2.106  # spawns the `claude` CLI; the CLI must be on PATH (see server/Dockerfile)
+anthropic>=0.40          # direct Messages API for the conversational intake chat (server/chat.py; needs ANTHROPIC_API_KEY)
 python-dotenv>=1.0       # local-only .env loading (server/config.py); Railway injects vars directly
 
 # Word (.docx) deliverable — the client-facing report is rendered from Markdown to a Word doc

@@ -39,6 +39,9 @@ OPERATOR_TOKEN = os.environ.get("OPERATOR_TOKEN") or None
 
 # Model + cost guards. Each phase is capped independently; Phase B does the web research.
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-opus-4-8")
+# The conversational intake chat uses a cheap/fast model (Anthropic Messages API, not the agent CLI).
+CHAT_MODEL = os.environ.get("CHAT_MODEL", "claude-haiku-4-5")
+CHAT_MAX_TURNS = int(os.environ.get("CHAT_MAX_TURNS", "30"))  # safety cap on intake conversation length
 MAX_BUDGET_USD_INTAKE = float(os.environ.get("MAX_BUDGET_USD_INTAKE", "1.50"))
 MAX_BUDGET_USD_RESEARCH = float(os.environ.get("MAX_BUDGET_USD_RESEARCH", "12.0"))
 MAX_TURNS = int(os.environ.get("MAX_TURNS", "300"))

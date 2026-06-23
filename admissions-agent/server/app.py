@@ -8,12 +8,13 @@ import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from starlette.concurrency import run_in_threadpool
 
 import jsonschema
 
 from lib import report_docx
 
-from . import config, jobs, state
+from . import chat, config, jobs, state
 from .answers import apply_answers
 from .client_store import create_client
 
@@ -36,7 +37,13 @@ async def healthz():
 # --- applicant-facing pages ---
 
 @app.get("/")
+async def chat_page():
+    return FileResponse(config.STATIC_DIR / "chat.html", media_type="text/html")
+
+
+@app.get("/form")
 async def intake_form():
+    """Structured-form intake — kept as a fallback (e.g. if the chat/API key is unavailable)."""
     if not config.INTAKE_FORM.exists():
         raise HTTPException(500, "intake form not found")
     return FileResponse(config.INTAKE_FORM, media_type="text/html")
@@ -69,6 +76,20 @@ async def submit_intake(request: Request):
     state.write_status(slug, state.QUEUED, message="Received — starting review.")
     jobs.start_intake(slug)
     return {"slug": slug, "results_url": f"/clients/{slug}/results", "status_url": f"/api/clients/{slug}/status"}
+
+
+@app.post("/api/chat")
+async def chat_turn(request: Request):
+    """One conversational-intake turn. Body: {messages: [{role,content}], profile: {}}."""
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "invalid JSON body")
+    messages = body.get("messages") if isinstance(body, dict) else None
+    profile = body.get("profile") if isinstance(body, dict) else None
+    if not isinstance(messages, list) or not isinstance(profile, dict):
+        raise HTTPException(400, "expected {messages: [...], profile: {...}}")
+    return await run_in_threadpool(chat.handle_turn, messages, profile)
 
 
 @app.get("/api/clients/{slug}/status")
