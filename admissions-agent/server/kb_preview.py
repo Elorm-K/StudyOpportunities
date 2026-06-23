@@ -62,12 +62,19 @@ def _table_rows(path: Path) -> list[list[str]]:
 
 
 def university_candidates(country: str, clusters: set[str], degree_level: str, limit: int = 6) -> list[dict]:
-    """Real catalog rows matching the client's field cluster(s) + degree level, de-duped by school."""
+    """Real catalog rows matching the client's field cluster(s) + degree level, de-duped by school.
+
+    Returns a *balanced mix*, not a top-heavy list: the catalogs are ordered roughly by prestige
+    (elite schools first, the mid-tier/safety schools we seed appended later), so we take ONE from the
+    top (an aspirational "reach") and fill the rest from the tail (mid-tier + safety). This mirrors the
+    shortlist-composition rule the research pipeline uses, so the pre-research teaser already looks
+    realistic rather than an all-Oxford / all-MIT list.
+    """
     path = _catalog_path(country)
     if not path or not path.exists():
         return []
     dl = (degree_level or "").strip().lower()
-    out: list[dict] = []
+    matches: list[dict] = []
     seen: set[str] = set()
     for cells in _table_rows(path):
         uni, row_clusters, row_degree = cells[0], cells[1].lower(), cells[2].lower()
@@ -79,10 +86,12 @@ def university_candidates(country: str, clusters: set[str], degree_level: str, l
         if key in seen:
             continue
         seen.add(key)
-        out.append({"university": uni, "entry": cells[4], "funding": cells[6], "source": cells[7]})
-        if len(out) >= limit:
-            break
-    return out
+        matches.append({"university": uni, "entry": cells[4], "funding": cells[6], "source": cells[7]})
+
+    if len(matches) <= limit:
+        return matches
+    # one top-tier reach + the rest drawn from the mid-tier/safety tail
+    return [matches[0]] + matches[-(limit - 1):]
 
 
 def _scholarship_files(countries: list[str], nationalities: list[str]) -> list[Path]:

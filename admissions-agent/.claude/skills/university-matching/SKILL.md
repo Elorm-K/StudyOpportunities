@@ -10,6 +10,11 @@ Generate the client's ranked university shortlist: **6–7 schools per target co
 school that admits the client but won't fund internationals must rank below a harder school that
 funds fully.
 
+**Composition — balanced, never top-heavy.** Each per-country set should contain **at most one
+reach/top-tier school**, with the **majority drawn from target and safety tiers** (use the `tier`
+from `eligibility.json`). The goal is a realistic reach/target/safety mix, not an all-elite list — see
+CLAUDE.md "Composition". Ranking math is unchanged; this only constrains which schools fill the slots.
+
 ## Inputs
 
 - `client_profile.json` (via `lib/profile_io.py`): `targets` (countries, degree_level, fields,
@@ -62,6 +67,9 @@ live by default. Live search is a fallback for catalog misses and stale entries 
 4. **Score and rank.** Call `scripts/score.py`:
    - `rank_per_country(candidates, per_country=targets.schools_per_country or 7)` returns the top
      6–7 per country by joint score.
+   Then **enforce the balanced composition**: keep at most one reach/top-tier school and fill the rest
+   from target + safety (by `tier`). If the top of the joint-ranked list is all reaches, swap the
+   surplus reaches for the best-scoring target/safety candidates so the set stays a realistic mix.
    Write a short `reasoning` per candidate explaining the two axes.
 
 5. **Present the shortlist.** One ranked table per country: school, program, admit rate, fee,

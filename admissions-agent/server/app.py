@@ -87,9 +87,10 @@ async def chat_turn(request: Request):
         raise HTTPException(400, "invalid JSON body")
     messages = body.get("messages") if isinstance(body, dict) else None
     profile = body.get("profile") if isinstance(body, dict) else None
+    research_started = bool(body.get("research_started")) if isinstance(body, dict) else False
     if not isinstance(messages, list) or not isinstance(profile, dict):
         raise HTTPException(400, "expected {messages: [...], profile: {...}}")
-    return await run_in_threadpool(chat.handle_turn, messages, profile)
+    return await run_in_threadpool(chat.handle_turn, messages, profile, research_started)
 
 
 @app.get("/api/clients/{slug}/status")

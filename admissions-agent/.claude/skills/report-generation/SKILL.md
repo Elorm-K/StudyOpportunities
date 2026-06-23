@@ -38,6 +38,8 @@ human signs off before anything goes to the client.
       explicitly asked for a longer list (`targets.schools_per_country` / an explicit request). **Make
       each university name a Markdown link** to its course/source page (e.g. `[University of Leeds](https://…)`)
       so the list stays scannable. One tight line of joint-score reasoning (admission × funding) per school.
+      **Favor a balanced mix** — about one reach/top-tier school and a majority of target + safety; do
+      not fill the list with reaches (see CLAUDE.md "Composition").
    4. **Scholarship plan** — eligible awards (hard-gates passed) + a short competitiveness note each; be
       honest where full funding is unlikely. **Link each award name** to its source
       (e.g. `[Chevening](https://…)`) instead of spelling out long URLs, so the section stays compact.

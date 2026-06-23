@@ -70,6 +70,13 @@ When generating university shortlists: **6–7 universities per target country**
 school that will admit the client but won't fund internationals ranks below a school that is harder
 to get into but funds fully. (`university-matching/scripts/score.py` computes this.)
 
+**Composition (balanced, never top-heavy).** Compose each per-country set as **roughly one
+top-tier/reach school plus a majority of mid-tier (target) and safety schools** — a balanced
+reach/target/safety list, not an all-elite one. Use the `tier` from `eligibility.json` to fill the
+slots; the ranking math above is unchanged, this only constrains *which* schools are chosen. (The
+pre-research chat teaser in `kb_preview.university_candidates` already mirrors this: one top + a
+mid/safety tail.)
+
 **Client-facing presentation (report-generation).** The final report presents the merged shortlist
 **ordered target → safety** and **capped at 10 schools total by default** (include more only if the
 client explicitly asks). `university-matching` may still generate the full per-country set; the report

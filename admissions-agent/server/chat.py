@@ -215,8 +215,13 @@ def _start_research(profile: dict) -> str:
     return slug
 
 
-def handle_turn(messages: list[dict], profile: dict) -> dict:
-    """Run one assistant turn (with an internal tool loop). Returns {reply, profile, done, slug}."""
+def handle_turn(messages: list[dict], profile: dict, research_started: bool = False) -> dict:
+    """Run one assistant turn (with an internal tool loop). Returns {reply, profile, done, slug}.
+
+    ``research_started`` is set by the client once the research pipeline has been kicked off: the chat
+    then continues as plain Q&A, so we strip the ``start_research`` tool to stop a follow-up message
+    from creating a second (duplicate) client + pipeline run.
+    """
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return {"error": "chat_unavailable",
                 "reply": "The chat isn't configured right now (missing API key). Please try the form.",
@@ -231,6 +236,11 @@ def handle_turn(messages: list[dict], profile: dict) -> dict:
 
     client = anthropic.Anthropic()
     profile = copy.deepcopy(profile or {})
+    # After research starts the chat is Q&A only: drop start_research and tell the model not to re-run it.
+    tools = [t for t in TOOLS if t["name"] != "start_research"] if research_started else TOOLS
+    research_note = ("\n\nIMPORTANT: Research is already underway in the background. Do NOT start "
+                     "research again (the tool is unavailable). Warmly answer the user's follow-up "
+                     "questions while their plan is being prepared.") if research_started else ""
     # Reconstruct the Anthropic message list from the visible transcript (text only).
     convo: list[dict] = [{"role": m["role"], "content": m["content"]}
                          for m in (messages or []) if m.get("content")]
@@ -238,7 +248,8 @@ def handle_turn(messages: list[dict], profile: dict) -> dict:
         convo = [{"role": "user", "content": "(start)"}]
 
     system = SYSTEM_PROMPT + "\n\nCurrent profile so far:\n" + json.dumps(profile, ensure_ascii=False) \
-        + "\n\nStill missing: " + (", ".join(_missing_required(profile)) or "nothing — you may start research")
+        + "\n\nStill missing: " + (", ".join(_missing_required(profile)) or "nothing — you may start research") \
+        + research_note
 
     done = False
     slug = None
@@ -248,7 +259,7 @@ def handle_turn(messages: list[dict], profile: dict) -> dict:
             model=config.CHAT_MODEL,
             max_tokens=1024,
             system=system,
-            tools=TOOLS,
+            tools=tools,
             messages=convo,
         )
         if resp.stop_reason != "tool_use":
@@ -287,7 +298,7 @@ def handle_turn(messages: list[dict], profile: dict) -> dict:
         if done:
             # let the model say its closing line, then stop
             final = client.messages.create(model=config.CHAT_MODEL, max_tokens=512,
-                                            system=system, tools=TOOLS, messages=convo)
+                                            system=system, tools=tools, messages=convo)
             reply = "".join(b.text for b in final.content if getattr(b, "type", "") == "text").strip()
             break
 

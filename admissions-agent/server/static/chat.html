@@ -100,6 +100,23 @@
   .carousel .dots{display:flex;gap:6px}
   .carousel .dot{width:7px;height:7px;border-radius:50%;background:#c4cedb;cursor:pointer;border:0;padding:0}
   .carousel .dot.on{background:var(--accent)}
+
+  /* progress sidebar — mobile-first: a sticky, collapsible panel under the header that never
+     covers the thread or the fixed composer. Becomes a fixed right-hand sidebar on desktop. */
+  .sidebar{position:sticky;top:8px;z-index:5;margin:0 0 12px}
+  .sidebar[hidden]{display:none}
+  .sidebar .statuscard{margin:0}
+  .statuscard summary{list-style:none;cursor:pointer;outline:none}
+  .statuscard summary::-webkit-details-marker{display:none}
+  .statuscard summary::after{content:'▾';margin-left:auto;color:var(--muted);font-size:.8rem;transition:transform .2s}
+  .statuscard[open] summary::after{transform:rotate(180deg)}
+  @media (min-width:980px){
+    .sidebar{position:fixed;top:90px;right:24px;width:320px;margin:0;max-height:calc(100vh - 180px);overflow:auto}
+    body.researching .wrap{max-width:820px}
+  }
+  @media (min-width:980px) and (max-width:1240px){
+    body.researching .wrap{margin-left:24px}
+  }
 </style>
 </head>
 <body>
@@ -111,6 +128,7 @@
       <p class="sub" id="sub">Let's build your study-abroad plan.</p>
     </div>
   </div>
+  <aside class="sidebar" id="sidebar" hidden></aside>
   <div class="thread" id="thread"></div>
   <div class="meta" id="meta"></div>
 </div>
@@ -131,6 +149,7 @@
   var profile = {};    // accumulating partial profile
   var phase = 'intake';
   var pollTimer = null;
+  var researchStarted = false;  // true once the pipeline is kicked off → chat becomes Q&A only
 
   // ===== markdown renderer (final report) =====
   function esc(s){ return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
@@ -209,14 +228,14 @@
     setComposerEnabled(false);
     showTyping();
     fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({messages:messages, profile:profile})})
+      body: JSON.stringify({messages:messages, profile:profile, research_started:researchStarted})})
       .then(function(r){ if(!r.ok) throw new Error('chat unavailable'); return r.json(); })
       .then(function(j){
         hideTyping();
         profile = j.profile || profile;
         if(j.reply){ addBubble(inline(j.reply)); messages.push({role:'assistant', content:j.reply}); }
-        if(j.done && j.slug){ startResearch(j.slug); }
-        else { setComposerEnabled(true); }
+        if(j.done && j.slug && !researchStarted){ startResearch(j.slug); }
+        else { setComposerEnabled(true); }  // keep chatting (intake not done, or research already running)
       })
       .catch(function(e){
         hideTyping();
@@ -256,8 +275,9 @@
   // carousel. Tips cycle within the carousel instead of dripping down and lengthening the page.
   var carousel = null;  // {root, slides, dots, show, timer, idx}
   function buildStatusCard(){
-    var card = document.createElement('div'); card.className = 'statuscard';
-    var pline = '<div class="statusline"><span class="spin"></span><span id="progresstext">'+inline(PROGRESS[0])+'</span></div>';
+    // <details> so the tips fold away on small screens; the progress line (summary) stays visible.
+    var card = document.createElement('details'); card.className = 'statuscard'; card.open = true;
+    var pline = '<summary class="statusline"><span class="spin"></span><span id="progresstext">'+inline(PROGRESS[0])+'</span></summary>';
     var slides = TIPS.map(function(t,i){ return '<div class="slide'+(i===0?' active':'')+'">'+inline(t)+'</div>'; }).join('');
     var dots = TIPS.map(function(_,i){ return '<button class="dot'+(i===0?' on':'')+'" data-i="'+i+'" aria-label="Tip '+(i+1)+'"></button>'; }).join('');
     card.innerHTML = pline +
@@ -266,7 +286,7 @@
       '<div class="nav"><button class="arrow" id="cprev" aria-label="Previous tip">‹</button>' +
       '<div class="dots">'+dots+'</div>' +
       '<button class="arrow" id="cnext" aria-label="Next tip">›</button></div></div>';
-    thread.appendChild(card); scrollDown();
+    $('sidebar').appendChild(card); scrollDown();
 
     var slideEls = card.querySelectorAll('.slide');
     var dotEls = card.querySelectorAll('.dot');
@@ -288,8 +308,11 @@
 
     carousel = {root:card, stop:function(){ if(auto) clearInterval(auto); if(ptimer) clearInterval(ptimer); }};
   }
-  function startStatus(){ if(!carousel) buildStatusCard(); }
-  function stopStatus(){ if(carousel){ carousel.stop(); if(carousel.root && carousel.root.parentNode){ carousel.root.parentNode.removeChild(carousel.root); } carousel=null; } }
+  function startStatus(){ if(carousel) return; $('sidebar').hidden=false; document.body.classList.add('researching'); buildStatusCard(); }
+  function stopStatus(){
+    if(carousel){ carousel.stop(); if(carousel.root && carousel.root.parentNode){ carousel.root.parentNode.removeChild(carousel.root); } carousel=null; }
+    $('sidebar').hidden=true; document.body.classList.remove('researching');
+  }
 
   var reportShown=false;
   function showReport(markdown, slug){
@@ -303,8 +326,11 @@
 
   function startResearch(slug){
     phase='research';
-    $('composer').style.display='none';
+    researchStarted=true;
     $('sub').textContent='Researching your options…';
+    // Keep the chat live: the composer stays, progress moves to the sidebar.
+    $('input').placeholder='Ask me anything while I work…';
+    setComposerEnabled(true);
     startStatus();
     function poll(){
       fetch('/api/clients/'+slug+'/status').then(function(r){ if(!r.ok) throw new Error('status'); return r.json(); })
