@@ -14,6 +14,7 @@ source_urls:
   - https://www.ox.ac.uk/clarendon/information-for-applicants/eligibility
   - https://www.ox.ac.uk/clarendon/information-for-applicants/full-time
   - https://study-uk.britishcouncil.org/scholarships-funding/great-scholarships
+  - https://www.rhodeshouse.ox.ac.uk/scholarships/applications/west-africa/
 freshness_threshold_days: 365  # every £ figure and country list is revised per cycle — re-verify annually
 status: seeded
 ---
@@ -34,6 +35,7 @@ status: seeded
 | **Gates Cambridge** | PhD, MPhil, MLitt, MRes, LLM at Cambridge | **Full-cost**: full tuition + maintenance **£22,050 / 12 mo** (2025-26 single rate; up to 4 yrs PhD) + airfare + visa + IHS; discretionary family/fieldwork/development funds | **Any country outside the UK** (US round = US citizen+resident) | Any subject at Cambridge | Must be applying for / admitted to an eligible full-time Cambridge postgraduate course; **no return-home requirement** | gatescambridge.org |
 | **Clarendon (Oxford)** | All Master's + DPhil (PhD) at Oxford | **Full**: full course fees (Home & Overseas) + living grant ≥ UKRI min (**2025-26: ≥ £20,780**) for the fee-liability period | **All nationalities — no restriction** | No field restriction | **No separate application** (auto-considered on Oxford graduate application by the funding deadline); outstanding academic merit (most hold ≥ First); **no return-home requirement** | ox.ac.uk/clarendon |
 | **GREAT Scholarships** | 1-year taught **Master's only** | **Partial**: **≥ £10,000** toward tuition (some universities more, e.g. £15,000) | Citizen of a **specific eligible country published per cycle** — **2026-27 (18):** Bangladesh, China, Egypt, France, Ghana, Greece, India, Indonesia, Italy, Kenya, Malaysia, Mexico, Nigeria, Pakistan, Spain, Thailand, Turkey, Vietnam | Varies by university/strand (General, Sci&Tech, Justice&Law, Climate) | Enrol on an eligible Master's at a participating university; **apply direct to the university** (no central deadline) | study-uk.britishcouncil.org |
+| **Rhodes Scholarship** (Rhodes Trust — **private/non-government** endowment, NOT a government award) | Any Oxford postgraduate degree (Master's / DPhil) | **Full**: all University & College fees + **£20,400/yr** living stipend (2025-26) + settling-in + health insurance + visa + two economy flights | Citizen + 5-of-last-10-yrs resident of a Rhodes constituency — **West Africa** (3/yr; incl. **Ghana ✓, Nigeria ✓**), East Africa, Southern Africa, etc.; **Global Rhodes** for countries without a constituency; **Bangladesh ✗** (no dedicated constituency — check Global round) | Strong academic record + leadership/service; age limits apply; must gain Oxford admission separately; **West Africa cycle ~1 Jun–27 Aug** | rhodeshouse.ox.ac.uk |
 
 ## Deadline windows (recurring; verify exact dates per cycle)
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Your study-abroad plan</title>
+<title>nity — your study-abroad plan</title>
 <style>
   :root{
     --bg:#f6f7f9; --card:#ffffff; --ink:#1c2430; --muted:#5b6b7c;
@@ -69,6 +69,29 @@
   .report table{border-collapse:collapse;width:100%;font-size:.94rem}
   .report th,.report td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
   .report th{background:var(--accent-weak)}
+
+  /* research status card + tips carousel (stays in place — does not lengthen the page) */
+  .statuscard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin:8px 0;box-shadow:0 1px 2px rgba(20,30,45,.04)}
+  .statusline{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--ink)}
+  .spin{width:16px;height:16px;border:2px solid var(--accent-weak);border-top-color:var(--accent);
+    border-radius:50%;flex:0 0 auto;animation:spin 0.9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .carousel{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .carousel .lead{display:block;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;margin-bottom:6px}
+  .carousel .viewport{position:relative;min-height:66px}
+  .carousel .slide{position:absolute;inset:0;opacity:0;transition:opacity .4s ease;
+    background:var(--accent-weak);border:1px solid #d4e0ff;border-radius:10px;padding:12px 14px;
+    pointer-events:none}
+  .carousel .slide.active{opacity:1;pointer-events:auto;position:relative}
+  .carousel .nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:12px}
+  .carousel .arrow{appearance:none;border:1px solid var(--line);background:#fff;color:var(--accent);
+    width:30px;height:30px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer}
+  .carousel .arrow:hover{background:var(--accent-weak)}
+  .carousel .dots{display:flex;gap:6px}
+  .carousel .dot{width:7px;height:7px;border-radius:50%;background:#c4cedb;cursor:pointer;border:0;padding:0}
+  .carousel .dot.on{background:var(--accent)}
 </style>
 </head>
 <body>
@@ -76,7 +99,7 @@
   <div class="chathead">
     <div class="avatar">🎓</div>
     <div>
-      <h1>Your Scholar advisor</h1>
+      <h1>nity</h1>
       <p class="sub" id="sub">Putting your study-abroad plan together…</p>
     </div>
   </div>
@@ -90,7 +113,7 @@
   var parts = location.pathname.split('/').filter(Boolean); // clients / <slug> / results
   var slug = parts[1];
   var thread = $('thread');
-  var pollTimer = null, dripTimer = null;
+  var pollTimer = null;
 
   // ===== markdown renderer (used for the final report) =====
   function esc(s){ return String(s).replace(/[&<>]/g, function(c){
@@ -205,40 +228,43 @@
     'Mastercard Foundation Scholars fully funds African students at partner universities — worth a look if you’re from Ghana or Nigeria.'
   ];
 
-  // Interleave progress + tips into one drip queue; tips keep cycling if research runs long.
-  var queue = [];
-  (function(){
-    var ti = 0;
-    for(var p=0; p<PROGRESS.length; p++){
-      queue.push({cls:'progress', html: inline(PROGRESS[p])});
-      if(ti < TIPS.length){ queue.push({cls:'tip', lead:'While you wait', html: inline(TIPS[ti++])}); }
-    }
-    while(ti < TIPS.length){ queue.push({cls:'tip', lead:'While you wait', html: inline(TIPS[ti++])}); }
-  })();
-  var qi = 0;
-  function nextDripItem(){
-    if(qi < queue.length) return queue[qi++];
-    // cycle tips so the thread never goes silent during a long run
-    var t = TIPS[(qi++) % TIPS.length];
-    return {cls:'tip', lead:'While you wait', html: inline(t)};
-  }
+  // The waiting UI is ONE status card that stays in place: a rotating progress line + a tips
+  // carousel. Tips cycle within the carousel instead of dripping down and lengthening the page.
+  var carousel = null;
+  function buildStatusCard(){
+    var card = document.createElement('div'); card.className = 'statuscard';
+    var pline = '<div class="statusline"><span class="spin"></span><span id="progresstext">'+inline(PROGRESS[0])+'</span></div>';
+    var slides = TIPS.map(function(t,i){ return '<div class="slide'+(i===0?' active':'')+'">'+inline(t)+'</div>'; }).join('');
+    var dots = TIPS.map(function(_,i){ return '<button class="dot'+(i===0?' on':'')+'" data-i="'+i+'" aria-label="Tip '+(i+1)+'"></button>'; }).join('');
+    card.innerHTML = pline +
+      '<div class="carousel"><span class="lead">While you wait — tips</span>' +
+      '<div class="viewport">'+slides+'</div>' +
+      '<div class="nav"><button class="arrow" id="cprev" aria-label="Previous tip">‹</button>' +
+      '<div class="dots">'+dots+'</div>' +
+      '<button class="arrow" id="cnext" aria-label="Next tip">›</button></div></div>';
+    thread.appendChild(card); scrollDown();
 
-  var dripping = false;
-  function startDrip(){
-    if(dripping) return; dripping = true;
-    function step(){
-      showTyping();
-      dripTimer = setTimeout(function(){
-        hideTyping();
-        var it = nextDripItem();
-        var html = (it.lead ? '<span class="lead">'+it.lead+'</span>' : '') + it.html;
-        addBubble(html, it.cls);
-        dripTimer = setTimeout(step, 9000 + Math.floor(2000*((qi*37)%5)/5)); // ~9–11s, deterministic jitter
-      }, 1300);
+    var slideEls = card.querySelectorAll('.slide');
+    var dotEls = card.querySelectorAll('.dot');
+    var idx = 0;
+    function show(i){
+      idx = (i + slideEls.length) % slideEls.length;
+      for(var k=0;k<slideEls.length;k++){ slideEls[k].classList.toggle('active', k===idx); dotEls[k].classList.toggle('on', k===idx); }
     }
-    step();
+    var auto = null;
+    function restart(){ if(auto) clearInterval(auto); auto = setInterval(function(){ show(idx+1); }, 7000); }
+    card.querySelector('#cprev').addEventListener('click', function(){ show(idx-1); restart(); });
+    card.querySelector('#cnext').addEventListener('click', function(){ show(idx+1); restart(); });
+    for(var d=0; d<dotEls.length; d++){ (function(el){ el.addEventListener('click', function(){ show(+el.getAttribute('data-i')); restart(); }); })(dotEls[d]); }
+    restart();
+
+    var pIdx = 0, ptext = card.querySelector('#progresstext');
+    var ptimer = setInterval(function(){ pIdx = (pIdx+1) % PROGRESS.length; ptext.innerHTML = inline(PROGRESS[pIdx]); }, 5000);
+
+    carousel = {root:card, stop:function(){ if(auto) clearInterval(auto); if(ptimer) clearInterval(ptimer); }};
   }
-  function stopDrip(){ dripping = false; if(dripTimer){ clearTimeout(dripTimer); dripTimer = null; } hideTyping(); }
+  function startDrip(){ if(!carousel) buildStatusCard(); }
+  function stopDrip(){ if(carousel){ carousel.stop(); if(carousel.root && carousel.root.parentNode){ carousel.root.parentNode.removeChild(carousel.root); } carousel=null; } }
 
   // ===== state machine over the real status =====
   var phase = null;      // last coarse phase we reacted to
@@ -265,7 +291,6 @@
     fetch('/api/clients/' + slug + '/status').then(function(r){
       if(!r.ok) throw new Error('status unavailable'); return r.json();
     }).then(function(st){
-      if(typeof st.cost_usd === 'number'){ $('meta').textContent = 'run cost so far: $' + st.cost_usd.toFixed(2); }
       switch(st.state){
         case 'queued':
         case 'running_intake':

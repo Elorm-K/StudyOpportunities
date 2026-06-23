@@ -27,19 +27,29 @@ human signs off before anything goes to the client.
    `pipeline_state`. For any figure that's stale (`lib/kb.is_stale`), trigger `knowledge-base-update`
    first — the report must not ship an out-of-date number.
 
-2. **Assemble the Markdown draft.** Compose, in order, the sections that have outputs:
-   1. **Client summary** — name, target countries/level/field, funding need.
+2. **Assemble the Markdown draft.** Compose the sections that have outputs **in this exact order**
+   (the checklist is always LAST):
+   1. **Client summary** — first name, target countries/level/field, funding need, and the assumed
+      intake (earliest feasible **Fall** unless the client asked for Spring — see `timeline.md`).
    2. **Grade mapping** — UK band / US GPA, with the **planning-estimate caveat** (`is_official=false`;
-      official WES/UK ENIC still required).
-   3. **University shortlist** — the 6–7 per country, ranked by admission × funding (joint-score
-      reasoning per school).
-   4. **Scholarship plan** — eligible awards (hard-gates passed) + competitiveness notes; be honest
-      where full funding is unlikely.
-   5. **Funded positions** — *if available*.
-   6. **Timeline** — the dated milestone calendar.
-   7. **Document checklist** — by country × level, with status.
+      official WES/UK ENIC still required). Keep this brief.
+   3. **University shortlist** — **ordered from target → safety** (most-attainable-with-funding first,
+      down to the safest). **Cap at 10 schools total by default**; only include more if the client
+      explicitly asked for a longer list (`targets.schools_per_country` / an explicit request). **Make
+      each university name a Markdown link** to its course/source page (e.g. `[University of Leeds](https://…)`)
+      so the list stays scannable. One tight line of joint-score reasoning (admission × funding) per school.
+   4. **Scholarship plan** — eligible awards (hard-gates passed) + a short competitiveness note each; be
+      honest where full funding is unlikely. **Link each award name** to its source
+      (e.g. `[Chevening](https://…)`) instead of spelling out long URLs, so the section stays compact.
+      Include large non-government awards (private trusts/foundations/corporate), not just the
+      government flagships.
+   5. **Funded positions** — *if available*. **Link each position/title** to its listing so the section
+      stays short rather than printing full URLs.
+   6. **Your plan** — the dated milestone calendar from `timeline.md`, built from the earliest feasible
+      Fall intake (or the client's requested Spring).
+   7. **Document checklist** — by country × level, with status. **This is the LAST section.**
    - **Every figure carries its source + `last_verified`** (carried through from the sourced outputs).
-     No uncited numbers; no over-promised funding.
+     No uncited numbers; no over-promised funding. Where a name is linked, the link IS its citation.
 
 3. **Write the DRAFT.** Save `clients/<name>/outputs/report.draft.md`. Present it to the **operator**
    (not the client) for review.

@@ -70,6 +70,12 @@ When generating university shortlists: **6–7 universities per target country**
 school that will admit the client but won't fund internationals ranks below a school that is harder
 to get into but funds fully. (`university-matching/scripts/score.py` computes this.)
 
+**Client-facing presentation (report-generation).** The final report presents the merged shortlist
+**ordered target → safety** and **capped at 10 schools total by default** (include more only if the
+client explicitly asks). `university-matching` may still generate the full per-country set; the report
+is where the target→safety ordering and the 10-school cap are applied, and where each university name
+is rendered as a link to its source page.
+
 ---
 
 ## Global guardrails (enforce on every skill)

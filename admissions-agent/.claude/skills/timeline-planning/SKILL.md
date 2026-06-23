@@ -21,9 +21,13 @@ calendar is reproducible.
 
 ## Process
 
-1. **Fix the intake.** Use `targets.intake` if set. Otherwise call
-   `backplan.next_feasible_intake(today, term)` — default next **Fall** if it's ≥10–12 months out,
-   else the following cycle. State the assumption to the client.
+1. **Fix the intake.** **Default to the earliest feasible Fall (autumn) intake** — only plan for a
+   Spring (January) intake if the client explicitly asked for Spring in `targets.intake`. Use
+   `targets.intake` when it names a specific term; otherwise call
+   `backplan.next_feasible_intake(today, term="Fall")` and take the **soonest Fall** that still leaves
+   enough runway to hit the binding deadlines (if the nearest Fall is too soon — deadlines already
+   passed or buffers can't be met — roll to the next Fall and say so). Always state the assumed intake
+   to the client.
 
 2. **Pull the real deadlines (cite them).** Branch on country × level and read the binding dates from
    the KB:

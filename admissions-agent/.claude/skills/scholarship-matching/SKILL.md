@@ -43,6 +43,15 @@ non-negotiable: **hard-gate first, then rank**. Never surface a categorically-in
    research output) and the award's selectivity. Surface the strongest realistic targets first;
    note what would strengthen a weak-but-possible application.
 
+   **Mix in large NON-government awards (don't just list the obvious government flagships).** Alongside
+   the general government/inter-governmental schemes (Chevening, Commonwealth, GREAT, Fulbright, PTDF,
+   GETFund, LPDP…), deliberately surface the **large privately-funded awards** the client qualifies
+   for — **private trusts/endowments** (Rhodes, Gates Cambridge, Clarendon, Knight-Hennessy),
+   **foundations** (Mastercard Foundation, Aga Khan, AAUW, MMEG, P.E.O.), and **corporate** awards
+   (NLNG, etc.). These are often overlooked, are frequently full-value, and can be a better fit than a
+   competitive government scheme. Include at least one or two strong non-government options whenever
+   the client is eligible.
+
 4. **Be honest about odds.** If full funding is unlikely, say so and present partial-funding or
    lower-cost routes rather than over-promising (guardrail). Pair scholarship results with the
    funding-aware university shortlist from `university-matching`.
