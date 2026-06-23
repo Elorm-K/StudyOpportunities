@@ -22,6 +22,15 @@ document-checklist → report-generation
 `knowledge-base-update` runs *underneath* all of them — invoke it on demand whenever a needed
 KB fact is missing or stale (see Freshness below), not as a scheduled stage.
 
+**KB-first suggestion (default path).** The KB is pre-seeded with a university/program catalog
+(`kb/universities/*.md`) and scholarship catalogs (`kb/scholarships/*.md`). Matching skills
+(`eligibility-assessment`, `university-matching`, `scholarship-matching`) **suggest from these
+catalogs** rather than researching every client live. Live research (`knowledge-base-update` /
+in-skill allow-listed search) is a **fallback** for catalog misses and stale facts only — not the
+default. This is deliberate: it cuts per-client latency and token cost from a ~35-min live crawl to a
+fast catalog lookup. "Stale" is defined by guardrail #2 below; a fresh, covering catalog entry is
+used directly. (`funded-position-finder` is the exception — live listings are never cached.)
+
 > **Build status:** All 10 skills implemented — `client-intake`, `transcript-evaluation`,
 > `eligibility-assessment`, `university-matching`, `scholarship-matching`, `funded-position-finder`,
 > `timeline-planning`, `document-checklist`, `knowledge-base-update`, `report-generation`.

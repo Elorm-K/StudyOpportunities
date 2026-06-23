@@ -9,5 +9,11 @@ python-multipart>=0.0.9  # form parsing for FastAPI
 claude-agent-sdk>=0.2.106  # spawns the `claude` CLI; the CLI must be on PATH (see server/Dockerfile)
 python-dotenv>=1.0       # local-only .env loading (server/config.py); Railway injects vars directly
 
+# Word (.docx) deliverable — the client-facing report is rendered from Markdown to a Word doc
+# server-side at download (lib/report_docx.py). Pure-Python, no system `pandoc` needed.
+markdown>=3.5            # Markdown -> HTML (with table support)
+python-docx>=1.1         # write the .docx
+htmldocx>=0.0.6          # HTML -> docx (carries tables/headings/links through)
+
 # The agent is question-driven and self-reported only — it never parses transcripts or uploaded
 # documents, so no PDF/OCR dependencies are required.

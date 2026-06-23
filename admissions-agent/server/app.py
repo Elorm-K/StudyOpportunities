@@ -11,6 +11,8 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 
 import jsonschema
 
+from lib import report_docx
+
 from . import config, jobs, state
 from .answers import apply_answers
 from .client_store import create_client
@@ -127,6 +129,33 @@ async def get_report(slug: str):
     if not final.exists():
         raise HTTPException(404, "report not ready")
     return JSONResponse({"markdown": final.read_text(encoding="utf-8")})
+
+
+@app.get("/api/clients/{slug}/report.docx")
+async def get_report_docx(slug: str):
+    """Download the finalized report as a Word document — the client-facing deliverable.
+
+    Rendered from report.md on demand and cached; re-rendered if the Markdown is newer.
+    """
+    st = state.read_status(slug)
+    if st is None:
+        raise HTTPException(404, "unknown client")
+    if st.get("state") == state.AWAITING_APPROVAL:
+        raise HTTPException(409, "report is under review")
+    final = config.final_report_path(slug)
+    if not final.exists():
+        raise HTTPException(404, "report not ready")
+    docx = config.docx_report_path(slug)
+    if not docx.exists() or docx.stat().st_mtime < final.stat().st_mtime:
+        try:
+            report_docx.markdown_to_docx(final.read_text(encoding="utf-8"), docx)
+        except RuntimeError as exc:
+            raise HTTPException(503, str(exc))
+    return FileResponse(
+        docx,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=f"{slug}-study-plan.docx",
+    )
 
 
 # --- operator-facing API (token-gated) ---

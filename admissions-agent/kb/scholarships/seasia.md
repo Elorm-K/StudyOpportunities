@@ -1,7 +1,9 @@
 ---
 title: Southeast Asia + Bangladesh nationality-specific scholarships
-last_verified: 2026-06-20
+last_verified: 2026-06-22
 source_urls:
+  - https://pmfellowship.pmo.gov.bd/                      # Bangladesh PM's Fellowship (funds study abroad)
+  - https://the.akdn/en/what-we-do/developing-human-capacity/education/international-scholarships  # Aga Khan ISP
   - https://lpdp.kemenkeu.go.id/en/beasiswa/beasiswa-share/beasiswa-share/   # Indonesia LPDP eligibility, terms, bond, dates
   - https://lpdp.kemenkeu.go.id/beasiswa/kebijakan-umum/                      # LPDP funds UK study
   - https://www.mara.gov.my/en/index/education/education-financing/peringkat-pasca-siswazah-2/  # Malaysia MARA gate
@@ -12,7 +14,10 @@ source_urls:
   - https://en.wikipedia.org/wiki/Science_and_Technology_Fellowship_Trust  # STFT overview + 2025 renaming
   - https://www.eservice.pmeat.gov.bd/phd                 # PMEAT = DOMESTIC only (not overseas)
 freshness_threshold_days: 365
-status: partial   # Indonesia/Malaysia + Bangladesh (leading) verified; Vietnam/Philippines/Thailand/JPA background
+# File-level seeded: leading countries (Indonesia/Malaysia + Bangladesh) verified 2026-06-22.
+# Rows marked "⚠️ NOT VERIFIED" (Vietnam/Philippines/Thailand/Malaysia JPA/Khazanah) are per-row
+# stale regardless of this status — confirm via knowledge-base-update before presenting them.
+status: seeded
 ---
 
 # Southeast Asia + Bangladesh nationality-specific scholarships
@@ -35,7 +40,9 @@ status: partial   # Indonesia/Malaysia + Bangladesh (leading) verified; Vietnam/
 | Philippines DOST-SEI / CHED foreign-study | DOST-SEI / CHED | Graduate | — | Filipino citizens | likely service bond | — | ⚠️ NOT VERIFIED |
 | Thailand government/royal (King's, Anandamahidol, OCSC) | Thai govt / royal | UG–PhD | — | Thai citizens | royal scholarships notably **no bond**; civil-service ones DO bond — verify | — | ⚠️ NOT VERIFIED |
 | **STFT — Science & Technology Fellowship Trust** (formerly Bangabandhu STFT; renamed 20 Mar 2025) 🟢 | Bangladesh Ministry of Science & Technology | MS / MPhil / PhD — **domestic AND abroad** (overseas: THE top **1–400** universities) | Govt-funded fellowship | **Bangladeshi citizen** | **Science & technology fields only**; **age caps: ≤35 (MS/MPhil), ≤42 (PhD)** at deadline; 2025-26 cycle **active** as of Jun 2026 (GO 04-06-2026) — verify current deadline | stft.gov.bd; grant.most.gov.bd | ✅ verified |
-| ~~Bangladesh PMEAT~~ — **DOMESTIC ONLY, not overseas** | PM's Education Assistance Trust | PhD **within Bangladesh public universities only** | — | Bangladeshi citizen | ❌ **Does NOT fund study abroad** — do not offer for UK/US. (The separate **PM's Fellowship (PMF)**, pmfellowship.pmo.gov.bd, *does* send fellows abroad — verify before offering) | eservice.pmeat.gov.bd | ✅ verified (exclusion) |
+| ~~Bangladesh PMEAT~~ — **DOMESTIC ONLY, not overseas** | PM's Education Assistance Trust | PhD **within Bangladesh public universities only** | — | Bangladeshi citizen | ❌ **Does NOT fund study abroad** — do not offer for UK/US. (The separate **PM's Fellowship (PMF)** *does* send fellows abroad — see next row) | eservice.pmeat.gov.bd | ✅ verified (exclusion) |
+| **PM's Fellowship (PMF)** 🟢 | Prime Minister's Office (Bangladesh) | Master's & PhD **abroad** (USA, UK, Australia, Canada) | Govt fellowship funding study at top-ranked foreign universities | **Bangladeshi citizen** | Must **self-secure admission to a top-100 world-ranked university**; cannot have previously completed a master's/PhD abroad (for the master's track); must pass the PMF eligibility test | pmfellowship.pmo.gov.bd | ✅ verified |
+| **Aga Khan Foundation ISP** | Aga Khan Foundation | Postgraduate (priority taught Master's; PhD considered) | **50% grant / 50% interest-free loan**; covers tuition + living (PhD funded first 2 yrs only) | Eligible-country list **incl. Bangladesh** — **NG ✗, GH ✗**; US/UK study allowed for applicants originally from a listed country | Demonstrated **financial need** ("no other means of financing"); 50% repayment obligation (service charge from 6 mo after graduation); **apply via local/regional AKF office** (not central); first year of PG study only | the.akdn | ✅ verified |
 | Malaysia JPA (PPN) overseas | Public Service Dept (Malaysia) | UG/PG | convertible-loan model — verify | Malaysian citizens | **service bond** typical | — | ⚠️ NOT VERIFIED |
 | Yayasan Khazanah Global | Khazanah (Malaysia) | UG/PG | full (verify) | Malaysian citizens | verify | — | ⚠️ NOT VERIFIED |
 

@@ -78,3 +78,8 @@ def draft_report_path(slug: str) -> Path:
 
 def final_report_path(slug: str) -> Path:
     return outputs_dir(slug) / "report.md"
+
+
+def docx_report_path(slug: str) -> Path:
+    """The Word deliverable clients download (rendered from the finalized report.md)."""
+    return outputs_dir(slug) / "report.docx"

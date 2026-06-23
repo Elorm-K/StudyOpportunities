@@ -1,7 +1,9 @@
 ---
 title: Africa / nationality-specific scholarships
-last_verified: 2026-06-20
+last_verified: 2026-06-22
 source_urls:
+  - https://candidate.scholastica.ng/schemes/nlngpgss   # Nigeria LNG overseas PG scholarship
+  - https://mcfscholars.asu.edu/                          # Mastercard Foundation Scholars — ASU (confirmed US host)
   - https://mastercardfdn.org/en/frequently-asked-questions/
   - https://mastercardfdn.org/en/articles/becoming-a-mastercard-foundation-scholar/
   - https://mastercardfdn.org/en/what-we-do/our-programs/mastercard-foundation-scholars-program/where-to-apply/
@@ -30,6 +32,7 @@ status: seeded
 | **Commonwealth Master's (low/middle-income)** | CSC (FCDO) | Taught Master's (UK) | **Full**: tuition + **£1,452/mo** (**£1,781/mo London**) + airfare + visa | Citizen/refugee/BPP of an eligible **low/middle-income Commonwealth** country (**44**, incl. Ghana, India, Nigeria, Kenya, South Africa, Pakistan — broader than the PhD list; note **India/Ghana/South Africa qualify for Master's but NOT the LDC PhD stream**) | ≥**2:1** (or 2:2 + PG qual); financial need | cscuk.fcdo.gov.uk |
 | **PTDF Overseas Postgraduate (Nigeria)** | Petroleum Technology Development Fund (Nigeria govt) | MSc & PhD (UK PhDs split-site via CPESK) | Return flights, health insurance, tuition + bench fees, accommodation/living allowances. **Total figure NOT FOUND on official source** (do not import third-party "fully funded" numbers) | **Nigerian citizen who has completed NYSC** | ≥**2:1** (or 2:2 + relevant industry experience); verified NIN; 5 O-Level credits incl. English & Maths; oil-and-gas-relevant field | scholarship.ptdf.gov.ng |
 | **NDDC Foreign Postgraduate (Niger Delta)** | Niger Delta Development Commission (Nigeria govt) | Foreign Master's | Value **pegged to prevailing Naira exchange rate — no fixed figure published (NOT FOUND on official source)** | **Indigene of one of the 9 Niger Delta states**: Abia, Akwa Ibom, Bayelsa, Cross River, Delta, Edo, Imo, Ondo, Rivers | Admission already secured into a foreign Master's; First Class or 2:1; completed NYSC | nddc.gov.ng |
+| **NLNG Overseas Postgraduate (Nigeria)** | Nigeria LNG Ltd (company-funded) | Master's abroad (**UK**; NOT US) | **Full** funding for a UK master's | **Nigerian citizen AND indigene of an NLNG host community** | Min **2:1**; completed NYSC; **age ≤30**; **IELTS 8.0 (≥7.0 each)** / TOEFL 102 / PTE 73–79; not a beneficiary of another scholarship; not related to NLNG staff; fields: environmental studies, engineering, management, accountancy, economics, IT, geology, banking, law, medicine, renewable energy/climate | candidate.scholastica.ng/schemes/nlngpgss |
 | **GETFund Overseas Postgraduate (Ghana)** 🟢 | Ghana Education Trust Fund (Ghana govt) | Master's / PhD abroad | Tuition + living (figure not on a live primary page) | **Ghanaian citizen** | ⚠️ **Return-service bond — return to Ghana & serve ≥5 yrs; breach = refund all + 15% interest** (per Auditor-General 2020; **5yr/15% not live-verified** — confirm current terms). Key hard gate for clients wanting to settle abroad | getfund.gov.gh (via citinewsroom/AG report) |
 | **Ghana Scholarships Secretariat / Authority** 🟢 | Office of the President (Ghana), est. 1960 | UG + PG abroad | Varies by award | **Ghanaian citizen** | Administers **foreign/bilateral awards** (Chinese Govt, Australian Awards, Serbia, Mauritius) sourced via Ministry of Foreign Affairs — mostly **non-UK/US destinations**; selected applicants forwarded to awarding country | scholarships.gov.gh |
 
@@ -42,7 +45,10 @@ partner-specific. Verified partners include:
 - **University of Edinburgh, UK** — Phase Two (2023–2030): full scholarships for 80 UG + 120 PG African students; climate-leadership focus.
 - **Pan-Atlantic University, Nigeria**; **Sciences Po, France** (1,450 African students over a decade); University of Global Health Equity (Rwanda); Mohammed VI Polytechnic (Morocco); EARTH University (Costa Rica); Makerere University (Uganda).
 - Full directory: https://mastercardfdn.org/en/what-we-do/our-programs/mastercard-foundation-scholars-program/where-to-apply/
-- **US partner universities not confirmed in this pass** — verify per-partner before asserting any US institution.
+- **Arizona State University (USA)** — confirmed US host (mcfscholars.asu.edu): full support (tuition,
+  fees, health insurance, lodging, food, travel, living); current model is Phase III (UG intake closed,
+  accelerated/online master's + certificate tracks active). African citizens only (not Bangladesh).
+- Other US partners shift by phase — verify per-partner before asserting any specific US institution.
 
 ## Deadline windows (recurring; all 2026/27 cycles closed as of 2026-06-20)
 

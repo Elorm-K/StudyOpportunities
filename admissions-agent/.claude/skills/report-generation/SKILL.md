@@ -63,5 +63,8 @@ human signs off before anything goes to the client.
 - Grade conversions are estimates; never promise full funding without a verified source — present
   honest alternatives where it's unlikely.
 
-> **Markdown only** (per project decision): no Word/Excel generation. If the operator later wants
-> docx/xlsx, add it as a `scripts/` step here.
+> **Author in Markdown; deliver as Word.** This skill writes Markdown (`report.draft.md` →
+> `report.md`). The **client-facing deliverable is a Word document (.docx)** — rendered from the
+> finalized `report.md` server-side and deterministically by `lib/report_docx.py` (served at
+> `GET /api/clients/<slug>/report.docx`). Do **not** generate the .docx from inside this skill; keep
+> authoring in Markdown so the approval gate stays a pure file promotion.

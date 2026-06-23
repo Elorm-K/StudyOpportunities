@@ -15,20 +15,33 @@ funds fully.
 - `client_profile.json` (via `lib/profile_io.py`): `targets` (countries, degree_level, fields,
   research interests, schools_per_country), `academics.mapped_grades`, `tests`, `funding`,
   `identity.nationality`.
-- KB: `kb/us/need-blind.md` (funding signal for US), plus live data (see below).
+- KB (suggest from these first): `kb/universities/uk.md`, `kb/universities/us.md` — the pre-seeded
+  university/program catalog (admit rate, grade/score range, intl fees, funds-intl flags per
+  university × field cluster). `kb/us/need-blind.md` (authoritative need-blind list for US). Live
+  data is the fallback only (see below).
 
 ## Process
 
-1. **Build the candidate set per country.** For each country in `targets.countries`, assemble
-   candidate programs that actually offer the client's field at their degree level. Live-search to
-   confirm the **program exists** for the target intake — don't shortlist a program that isn't
-   offered.
+**KB-first (default).** This skill *suggests* from the pre-seeded catalog; it does **not** research
+live by default. Live search is a fallback for catalog misses and stale entries only — see step 1.
 
-2. **Get current data per candidate (cite everything).** For each candidate, gather:
-   - current **admit rate** and **score/grade ranges** (for admission probability),
-   - **tuition/fees** and **funding-for-internationals** facts (for funding attainability).
-   Pull from KB if fresh; otherwise trigger `knowledge-base-update`. Every figure shown to the
-   client needs a source URL + `last_verified`.
+1. **Build the candidate set per country from the catalog.** For each country in `targets.countries`,
+   select catalog rows from `kb/universities/<country>.md` whose **field cluster** matches the
+   client's `targets.fields_of_study` and whose degree level matches. These are the suggested
+   candidates — no live search when the catalog covers the field.
+   **Live fallback only when:** (a) the field cluster has no or too-thin coverage for that country
+   (fewer than `schools_per_country`), or (b) a needed catalog entry is stale
+   (`lib/kb.is_stale(path, today)`). In those cases invoke `knowledge-base-update` (or an in-skill
+   allow-listed search) to confirm the program exists and fill the gap, then write it back to the
+   catalog so the next client reuses it.
+
+2. **Read the current data per candidate from the catalog (cite everything).** Each catalog row
+   already carries:
+   - **admit rate** and **score/grade ranges** (for admission probability),
+   - **intl tuition/fees** and **funding-for-internationals** flags (for funding attainability),
+   - a source URL + `last_verified`.
+   Use those directly. Only re-fetch a specific figure if its entry is stale. Every figure shown to
+   the client must still carry its source URL + `last_verified` from the catalog.
 
 3. **Estimate the two axes (0..1).**
    - **admission_probability** — read it from `clients/<name>/outputs/eligibility.json` (written by

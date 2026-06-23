@@ -20,8 +20,15 @@ non-negotiable: **hard-gate first, then rank**. Never surface a categorically-in
 
 ## Process
 
-1. **Assemble the candidate award pool** for the client's target countries from the KB scholarship
-   files. Refresh any stale entries via `knowledge-base-update` first (figures shift each cycle).
+**KB-first (default).** This skill *suggests* awards from the pre-seeded scholarship catalog; it does
+**not** research live by default. Live search is a fallback for catalog misses and stale entries only.
+
+1. **Assemble the candidate award pool from the KB** for the client's target countries — both the
+   flagship awards and the **smaller / independent awards** sections in the `kb/scholarships/*.md`
+   files. Suggest from these directly. **Live fallback only when:** (a) a needed entry is stale
+   (`lib/kb.is_stale(path, today)`), or (b) the client's nationality/field has no KB coverage. In
+   those cases invoke `knowledge-base-update` to fetch from an authoritative source and write the
+   dated, sourced entry back to the catalog so the next client reuses it.
 
 2. **Hard-gate (eliminate, don't rank).** Drop any award that fails a categorical gate — see
    `references/eligibility-gates.md`. The gates, in order:

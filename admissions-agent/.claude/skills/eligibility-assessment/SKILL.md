@@ -14,8 +14,10 @@ admission axis its joint scorer (`score.py`) needs — so keep the output machin
 - `client_profile.json` (via `lib/profile_io.py`): `targets.target_universities`,
   `targets.fields_of_study`, `targets.countries`, `targets.degree_level`, `academics.mapped_grades`
   (the UK band / US GPA planning estimate), `tests`.
-- KB: current **admit rate + applicant stat ranges** (25th/50th/75th percentile of GPA or test) per
-  candidate school. If a figure is missing or stale, trigger `knowledge-base-update` before using it.
+- KB (suggest from first): `kb/universities/<country>.md` — the pre-seeded catalog carries the
+  **admit rate + grade/score band** per candidate school. Read these directly. Live fallback
+  (`knowledge-base-update`) only when a school is absent from the catalog or its entry is stale
+  (`lib/kb.is_stale(path, today)`).
 
 ## Process
 
@@ -23,9 +25,10 @@ admission axis its joint scorer (`score.py`) needs — so keep the output machin
    sensible field/country longlist (enough to yield 6–7 viable per country downstream). Each candidate
    is `{school, country}`.
 
-2. **Gather cited data per school.** For each candidate pull the current **admit rate** and the
-   **score/grade band** (p25/p50/p75) for the relevant stat. Use the KB if fresh; otherwise
-   `knowledge-base-update` (authoritative source + `last_verified`). Every admit rate shown is cited.
+2. **Read cited data per school from the catalog.** For each candidate take the **admit rate** and
+   the **score/grade band** (p25/p50/p75) from `kb/universities/<country>.md`. Suggest from the
+   catalog directly — live `knowledge-base-update` only for a school the catalog doesn't cover or
+   whose entry is stale. Every admit rate shown carries its source + `last_verified`.
 
 3. **Pick the applicant stat.** Use the client's comparable figure on the same scale as the band —
    typically `mapped_grades.us_gpa` (US 4.0 schools) or the relevant test score. Remember the grade
