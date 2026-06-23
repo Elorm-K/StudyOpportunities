@@ -18,7 +18,6 @@ required.
 | A2 | Nationality (all citizenships)? | scholarship-matching, funded-position-finder | `identity.nationality` |
 | A3 | Country of residence? | timeline-planning (visa) | `identity.country_of_residence` |
 | A4 | Date of birth? | document-checklist | `identity.date_of_birth` |
-| A5 | Best contact (email/phone)? | report-generation | `identity.contact` |
 
 ## B. Targets & branching switches `[ALL]` — ask these early; they gate everything else
 | # | Question | Feeds | Profile field |

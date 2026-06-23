@@ -330,12 +330,6 @@
       </select>
     </div>
 
-    <div class="pair">
-      <div class="field"><label for="email">Best email</label>
-        <input type="email" id="email" name="email" autocomplete="email"></div>
-      <div class="field"><label for="phone">Phone</label>
-        <input type="tel" id="phone" name="phone" autocomplete="tel"></div>
-    </div>
     <div class="field">
       <label for="dob">Date of birth</label>
       <input type="date" id="dob" name="dob">
@@ -466,8 +460,7 @@
         full_name: val('full_name'),
         nationality: splitList(val('nationality')),
         country_of_residence: val('residence'),
-        date_of_birth: val('dob'),
-        contact: { email: val('email'), phone: val('phone') }
+        date_of_birth: val('dob')
       },
       targets: {
         countries: checkedCountries(),
