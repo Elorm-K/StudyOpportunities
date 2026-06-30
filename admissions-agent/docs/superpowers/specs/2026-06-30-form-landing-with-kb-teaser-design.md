@@ -22,8 +22,9 @@ form's results page to surface that teaser too.
 ## Goals
 
 1. `GET /` serves the structured form; the chat moves to a fallback route.
-2. The results page shows the existing tips/progress drip immediately, and inserts the instant
-   KB teaser ("first results") as soon as it is computed.
+2. The results page shows a compact, fixed-height wait UI — a **sticky carousel** cycling
+   tips/progress in place (no ever-growing thread) — and pins the instant KB teaser ("first
+   results") as a persistent card above it as soon as it is computed.
 
 ## Non-goals
 
@@ -88,32 +89,61 @@ async def get_teaser(slug: str):
 
 ### 3. Results page (`server/static/results.html`)
 
-- The tips + progress drip still starts immediately on load (unchanged — "tips first").
-- On load, fire one `fetch('/api/clients/' + slug + '/teaser')`. When it resolves with a
-  non-empty payload, render a single teaser bubble and append it to the thread, guarded by a
-  `teaserShown` flag so it appears once.
-- Bubble content:
-  - Lead label: `Early matches from our knowledge base`.
-  - For each country with candidates: a `<strong>` line (`UK universities that fit your field`)
-    followed by one line per university: `• <name> — entry: <entry> (funds intl |
-    scholarship-route funding)`.
-  - If scholarships present: `Scholarships you may be eligible for: A, B, C.`
-  - Trailing caveat: the same "quick preview from our knowledge base — your full plan will rank
-    these…" note used in `build_preview`.
-- The teaser is built from the structured JSON in the page's own helpers; it does not reuse the
-  markdown renderer.
-- Failure of the teaser fetch is swallowed (no bubble, no error) — the page proceeds with the
-  normal drip + report flow.
+The current page is an ever-growing **chat thread** that appends a new bubble for every tip and
+progress line, so the page lengthens for the whole wait. We replace the wait UX with a
+**compact, fixed-height layout** that does not grow while research runs. The existing Markdown
+renderer (`md`/`inline`) is kept and reused for the final report.
+
+The page has up to three stacked regions:
+
+1. **Teaser card (pinned, optional).** On load, fire one
+   `fetch('/api/clients/' + slug + '/teaser')`. When it resolves with a non-empty payload,
+   render a single persistent card and pin it **above** the carousel (guarded by a `teaserShown`
+   flag so it appears once). It does **not** rotate — it stays put for the whole wait so the
+   client can keep reading the real matches. Content:
+   - Lead label: `Early matches from our knowledge base`.
+   - For each country with candidates: a `<strong>` heading (`UK universities that fit your
+     field`) followed by one line per university: `<name> — entry: <entry> (funds intl |
+     scholarship-route funding)`.
+   - If scholarships present: `Scholarships you may be eligible for: A, B, C.`
+   - Trailing caveat: the same "quick preview from our knowledge base — your full plan will rank
+     these…" note used in `build_preview`.
+   - Built from the structured teaser JSON by the page's own helpers; does not use the Markdown
+     renderer. A failed/empty teaser fetch is swallowed — no card, no error.
+
+2. **Sticky carousel (the wait UI).** A single fixed-height card, `position: sticky` near the
+   top, that **cross-fades through one message at a time, in place** — it replaces content
+   rather than appending, so the page height stays constant during the wait. It cycles the same
+   `PROGRESS` and `TIPS` content the current page uses, interleaved, advancing every ~7–8s, and
+   keeps cycling the tips if research runs long. Each slide shows its lead label (e.g. `While you
+   wait` for tips) and the message. No typing indicator and no thread.
+
+3. **Report (replaces the wait UI).** On `done`, fetch the report and render it with the
+   existing Markdown renderer + `.docx` download button. When the report renders, the carousel
+   and the teaser card are removed/hidden — the report is the full ranked deliverable and
+   supersedes the teaser.
+
+State handling (the existing poll loop / state machine is kept; only what it drives changes):
+
+- `queued` / `running_intake` / `running_research` / `awaiting_approval` → carousel runs (and
+  the approval message can be surfaced as a carousel slide or the subheading).
+- `awaiting_answers` → stop the carousel and show the "Answer the questions →" CTA in place of
+  the carousel (the teaser card, if shown, stays pinned above).
+- `error` → stop the carousel and show the error in place of it.
+- `done` → render the report as in (3).
 
 ## Flow after the change
 
 1. User lands on `/` → fills the form → Submit → POST `/api/intake` → redirect to
    `/clients/<slug>/results`.
-2. Results page: tips/progress drip starts; teaser fetch fires; teaser bubble appears within a
-   second or two.
-3. Phase A runs. If clarifying questions are produced, the page shows the "Answer the
-   questions →" CTA (existing behavior); otherwise Phase B proceeds.
-4. On `done`, the report renders in-thread with the .docx download button (existing behavior).
+2. Results page: the sticky carousel starts cycling progress/tips immediately; the teaser fetch
+   fires and, within a second or two, pins the teaser card above the carousel. Page stays
+   compact — no growing thread.
+3. Phase A runs. If clarifying questions are produced, the carousel is replaced by the "Answer
+   the questions →" CTA (teaser stays pinned above); otherwise Phase B proceeds and the carousel
+   keeps cycling.
+4. On `done`, the carousel + teaser are cleared and the report renders with the .docx download
+   button.
 
 ## Testing / verification
 
@@ -125,8 +155,9 @@ async def get_teaser(slug: str):
   and `{}` for a profile with no country/field.
 - `GET /api/clients/<slug>/teaser` returns the structured payload for an existing client and
   `{}` for an unknown slug.
-- Manual: submit the form and confirm the teaser bubble appears on the results page ahead of the
-  full report.
+- Manual: submit the form and confirm (a) the sticky carousel cycles tips/progress in place
+  without the page growing, (b) the teaser card pins above it within a second or two, and (c) on
+  completion the carousel + teaser clear and the report renders.
 
 ## Risks / notes
 
