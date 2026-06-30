@@ -129,6 +129,41 @@ def scholarship_hints(countries: list[str], nationalities: list[str], limit: int
     return names
 
 
+def preview_payload(profile: dict) -> dict:
+    """Structured instant teaser for the results page. Returns {} when nothing matches.
+
+    Same KB lookup as ``build_preview`` (real catalog rows, no web, no LLM) but shaped as JSON the
+    results page renders into the pinned 'Early matches' card:
+        {"universities": {"UK": [{"university","entry","funds_intl"}]},
+         "scholarships": ["Chevening", ...]}
+    """
+    targets = profile.get("targets") or {}
+    identity = profile.get("identity") or {}
+    countries = targets.get("countries") or []
+    fields = targets.get("fields_of_study") or []
+    degree = targets.get("degree_level") or ""
+    nats = identity.get("nationality") or []
+    clusters = field_to_clusters(fields)
+
+    universities: dict[str, list[dict]] = {}
+    for country in countries:
+        unis = university_candidates(country, clusters, degree, limit=5)
+        if unis:
+            universities[country] = [
+                {
+                    "university": u["university"],
+                    "entry": u["entry"],
+                    "funds_intl": "funds_internationals=yes" in u["funding"],
+                }
+                for u in unis
+            ]
+    scholarships = scholarship_hints(countries, nats)
+
+    if not universities and not scholarships:
+        return {}
+    return {"universities": universities, "scholarships": scholarships}
+
+
 def build_preview(profile: dict) -> str:
     """A short, plain-text teaser the chat model relays verbatim. Empty string if nothing matches."""
     targets = profile.get("targets") or {}

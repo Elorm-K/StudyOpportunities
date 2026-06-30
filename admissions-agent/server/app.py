@@ -4,6 +4,7 @@ the report behind the operator approval gate. Thin — all logic lives in jobs/r
 
 from __future__ import annotations
 
+import json
 import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -14,7 +15,7 @@ import jsonschema
 
 from lib import report_docx
 
-from . import chat, config, jobs, state
+from . import chat, config, jobs, kb_preview, state
 from .answers import apply_answers
 from .client_store import create_client
 
@@ -37,16 +38,18 @@ async def healthz():
 # --- applicant-facing pages ---
 
 @app.get("/")
-async def chat_page():
-    return FileResponse(config.STATIC_DIR / "chat.html", media_type="text/html")
-
-
 @app.get("/form")
 async def intake_form():
-    """Structured-form intake — kept as a fallback (e.g. if the chat/API key is unavailable)."""
+    """Structured intake form — the default landing page."""
     if not config.INTAKE_FORM.exists():
         raise HTTPException(500, "intake form not found")
     return FileResponse(config.INTAKE_FORM, media_type="text/html")
+
+
+@app.get("/chat")
+async def chat_page():
+    """Conversational intake — kept as a fallback (needs ANTHROPIC_API_KEY for the chat model)."""
+    return FileResponse(config.STATIC_DIR / "chat.html", media_type="text/html")
 
 
 @app.get("/clients/{slug}/questions")
@@ -98,6 +101,25 @@ async def get_status(slug: str):
     if st is None:
         raise HTTPException(404, "unknown client")
     return st
+
+
+@app.get("/api/clients/{slug}/teaser")
+async def get_teaser(slug: str):
+    """Instant KB teaser ('first results') for the results page — real catalog matches, no LLM.
+
+    A nice-to-have, never an error surface: returns {} (HTTP 200) when the client/profile is
+    missing or nothing in the KB matches, so the page degrades silently.
+    """
+    path = config.profile_path(slug)
+    if not path.exists():
+        return {}
+    try:
+        profile = json.loads(path.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        return {}
+    if not isinstance(profile, dict):
+        return {}
+    return kb_preview.preview_payload(profile)
 
 
 @app.get("/api/clients/{slug}/questions")

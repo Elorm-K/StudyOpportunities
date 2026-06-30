@@ -15,41 +15,51 @@
     font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
   .wrap{max-width:820px;margin:0 auto;padding:20px 18px 96px}
 
-  /* chat header */
+  /* header */
   .chathead{display:flex;align-items:center;gap:12px;padding:6px 4px 14px}
   .avatar{width:42px;height:42px;border-radius:50%;background:var(--accent-weak);
     display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto}
   .chathead h1{font-size:1.05rem;margin:0}
   .chathead .sub{color:var(--muted);font-size:.85rem;margin:0}
 
-  /* chat thread */
-  .thread{display:flex;flex-direction:column;gap:10px}
-  .row{display:flex;gap:10px;align-items:flex-end;max-width:88%}
-  .row .av{width:30px;height:30px;border-radius:50%;background:var(--accent-weak);
-    display:flex;align-items:center;justify-content:center;font-size:16px;flex:0 0 auto}
-  .bubble{background:var(--card);border:1px solid var(--line);border-radius:14px;
-    border-bottom-left-radius:4px;padding:11px 14px;box-shadow:0 1px 2px rgba(20,30,45,.04);
-    animation:pop .25s ease-out}
-  .bubble.tip{background:var(--accent-weak);border-color:#d4e0ff}
-  .bubble.progress{font-weight:600}
-  .bubble .lead{display:block;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;
-    color:var(--accent);font-weight:700;margin-bottom:3px}
-  .bubble.err{border-color:var(--err);color:var(--err)}
-  .bubble a{color:var(--accent)}
-  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-  /* typing indicator */
-  .typing{display:inline-flex;gap:4px;padding:13px 14px}
-  .typing span{width:7px;height:7px;border-radius:50%;background:#b7c2d0;animation:blink 1.2s infinite}
-  .typing span:nth-child(2){animation-delay:.2s}
-  .typing span:nth-child(3){animation-delay:.4s}
-  @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
-
-  .btn{display:inline-block;margin-top:10px;appearance:none;border:0;border-radius:10px;
+  /* generic card */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin:10px 0;box-shadow:0 1px 2px rgba(20,30,45,.04)}
+  .card.err{border-color:var(--err);color:var(--err)}
+  .card .lead{display:block;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;margin-bottom:5px}
+  .card a{color:var(--accent)}
+  .btn{display:inline-block;margin-top:12px;appearance:none;border:0;border-radius:10px;
     background:var(--accent);color:#fff;font:600 15px/1 system-ui;padding:13px 22px;cursor:pointer;text-decoration:none}
+
+  /* pinned teaser card */
+  .teaser{background:var(--accent-weak);border-color:#d4e0ff}
+  .teaser .tgroup{margin:8px 0 4px}
+  .teaser ul{margin:4px 0 6px;padding-left:1.2em}
+  .teaser li{margin:.18em 0}
+  .teaser .fund{color:var(--muted)}
+  .teaser .sch{margin:8px 0 4px}
+  .teaser .caveat{color:var(--muted);font-size:.85rem;margin:10px 0 0}
+
+  /* sticky cycling carousel (the wait UI) */
+  .carousel{position:sticky;top:14px;display:flex;flex-direction:column;gap:12px}
+  /* persistent "working in the background" badge — never rotates away */
+  .working{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.82rem}
+  .working .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);
+    flex:0 0 auto;animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+  .cslide{min-height:60px;transition:opacity .38s ease}
+  .cslide.out{opacity:0}
+  .cslide .msg{font-weight:600}
+  /* indeterminate progress bar */
+  .pbar{position:relative;height:3px;background:var(--accent-weak);border-radius:3px;overflow:hidden}
+  .pbar::after{content:"";position:absolute;top:0;bottom:0;left:-35%;width:35%;
+    background:var(--accent);border-radius:3px;animation:indet 1.5s ease-in-out infinite}
+  @keyframes indet{0%{left:-35%}100%{left:100%}}
+
   .meta{color:var(--muted);font-size:.8rem;text-align:center;margin-top:16px}
 
-  /* report card (rendered in-thread on completion) */
+  /* report (replaces the wait UI on completion) */
   .dlbar{margin:4px 0 16px;text-align:right}
   .dlbar .btn{margin-top:0}
   .report{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
@@ -80,7 +90,8 @@
       <p class="sub" id="sub">Putting your study-abroad plan together…</p>
     </div>
   </div>
-  <div class="thread" id="thread"></div>
+  <div id="teaser"></div>
+  <div id="stage"></div>
   <div class="meta" id="meta"></div>
 </div>
 <script>
@@ -89,8 +100,7 @@
   var $ = function(id){ return document.getElementById(id); };
   var parts = location.pathname.split('/').filter(Boolean); // clients / <slug> / results
   var slug = parts[1];
-  var thread = $('thread');
-  var pollTimer = null, dripTimer = null;
+  var pollTimer = null;
 
   // ===== markdown renderer (used for the final report) =====
   function esc(s){ return String(s).replace(/[&<>]/g, function(c){
@@ -157,28 +167,37 @@
     return out.join('\n');
   }
 
-  // ===== chat helpers =====
-  function scrollDown(){ window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); }
-
-  function addBubble(html, cls){
-    var row = document.createElement('div');
-    row.className = 'row';
-    row.innerHTML = '<div class="av">🎓</div><div class="bubble '+(cls||'')+'">'+html+'</div>';
-    thread.appendChild(row);
-    scrollDown();
-    return row;
+  // ===== pinned teaser card ("first results") =====
+  var teaserShown = false;
+  function renderTeaser(data){
+    if(teaserShown || !data) return;
+    var unis = data.universities || {};
+    var sch = data.scholarships || [];
+    var countries = Object.keys(unis);
+    if(!countries.length && !sch.length) return;   // nothing matched — stay silent
+    teaserShown = true;
+    var html = '<span class="lead">Early matches from our knowledge base</span>';
+    countries.forEach(function(country){
+      html += '<div class="tgroup"><strong>'+esc(country)+' universities that fit your field</strong><ul>';
+      unis[country].forEach(function(u){
+        var fund = u.funds_intl ? 'funds intl' : 'scholarship-route funding';
+        html += '<li>'+esc(u.university)+' — entry: '+esc(u.entry)+
+                ' <span class="fund">('+fund+')</span></li>';
+      });
+      html += '</ul></div>';
+    });
+    if(sch.length){
+      html += '<p class="sch"><strong>Scholarships you may be eligible for:</strong> '+
+              sch.map(esc).join(', ')+'.</p>';
+    }
+    html += '<p class="caveat">This is a quick preview from our knowledge base — your full plan '+
+            'will rank these by your admission odds and funding fit, with sources for every figure.</p>';
+    var card = $('teaser');
+    card.className = 'card teaser';
+    card.innerHTML = html;
   }
-  var typingRow = null;
-  function showTyping(){
-    if(typingRow) return;
-    typingRow = document.createElement('div');
-    typingRow.className = 'row';
-    typingRow.innerHTML = '<div class="av">🎓</div><div class="bubble"><span class="typing"><span></span><span></span><span></span></span></div>';
-    thread.appendChild(typingRow); scrollDown();
-  }
-  function hideTyping(){ if(typingRow){ thread.removeChild(typingRow); typingRow = null; } }
 
-  // ===== scripted content (no LLM calls) =====
+  // ===== scripted carousel content (no LLM calls) =====
   var PROGRESS = [
     'Mapping your grades onto the UK / US scale…',
     'Shortlisting universities that actually offer your field at your level…',
@@ -205,62 +224,101 @@
     'Mastercard Foundation Scholars fully funds African students at partner universities — worth a look if you’re from Ghana or Nigeria.'
   ];
 
-  // Interleave progress + tips into one drip queue; tips keep cycling if research runs long.
+  // Interleave progress + tips; cycle tips so the carousel never runs dry on a long run.
   var queue = [];
   (function(){
     var ti = 0;
     for(var p=0; p<PROGRESS.length; p++){
       queue.push({cls:'progress', html: inline(PROGRESS[p])});
-      if(ti < TIPS.length){ queue.push({cls:'tip', lead:'While you wait', html: inline(TIPS[ti++])}); }
+      if(ti < TIPS.length){ queue.push({lead:'While you wait', html: inline(TIPS[ti++])}); }
     }
-    while(ti < TIPS.length){ queue.push({cls:'tip', lead:'While you wait', html: inline(TIPS[ti++])}); }
+    while(ti < TIPS.length){ queue.push({lead:'While you wait', html: inline(TIPS[ti++])}); }
   })();
-  var qi = 0;
-  function nextDripItem(){
+  var qi = 0, tipCycle = 0;
+  function nextItem(){
     if(qi < queue.length) return queue[qi++];
-    // cycle tips so the thread never goes silent during a long run
-    var t = TIPS[(qi++) % TIPS.length];
-    return {cls:'tip', lead:'While you wait', html: inline(t)};
+    return {lead:'While you wait', html: inline(TIPS[(tipCycle++) % TIPS.length])};
   }
 
-  var dripping = false;
-  function startDrip(){
-    if(dripping) return; dripping = true;
-    function step(){
-      showTyping();
-      dripTimer = setTimeout(function(){
-        hideTyping();
-        var it = nextDripItem();
-        var html = (it.lead ? '<span class="lead">'+it.lead+'</span>' : '') + it.html;
-        addBubble(html, it.cls);
-        dripTimer = setTimeout(step, 9000 + Math.floor(2000*((qi*37)%5)/5)); // ~9–11s, deterministic jitter
-      }, 1300);
-    }
-    step();
+  // ===== sticky carousel (the wait UI), lives in #stage =====
+  var carouselTimer = null, slideEl = null, running = false;
+  var WORKING_DEFAULT = 'Researching your plan in the background — this usually takes a few minutes';
+  function setWorking(text){ var el = $('wlabel'); if(el) el.textContent = text; }
+  function slideHTML(it){
+    return (it.lead ? '<span class="lead">'+it.lead+'</span>' : '') + '<div class="msg">'+it.html+'</div>';
   }
-  function stopDrip(){ dripping = false; if(dripTimer){ clearTimeout(dripTimer); dripTimer = null; } hideTyping(); }
+  function startCarousel(){
+    if(running) return; running = true;
+    var stage = $('stage');
+    stage.innerHTML = '';
+    var card = document.createElement('div');
+    card.className = 'card carousel';
+    var work = document.createElement('div');
+    work.className = 'working';
+    work.innerHTML = '<span class="dot"></span><span class="wlabel" id="wlabel">' +
+      WORKING_DEFAULT + '</span>';
+    slideEl = document.createElement('div');
+    slideEl.className = 'cslide';
+    slideEl.innerHTML = slideHTML(nextItem());   // first item, no fade
+    var pbar = document.createElement('div');
+    pbar.className = 'pbar';
+    card.appendChild(work);
+    card.appendChild(slideEl);
+    card.appendChild(pbar);
+    stage.appendChild(card);
+    carouselTimer = setInterval(function(){
+      var it = nextItem();
+      slideEl.classList.add('out');
+      setTimeout(function(){
+        if(!slideEl) return;
+        slideEl.innerHTML = slideHTML(it);
+        slideEl.classList.remove('out');
+      }, 380);
+    }, 7500);
+  }
+  function clearStage(){
+    running = false;
+    if(carouselTimer){ clearInterval(carouselTimer); carouselTimer = null; }
+    slideEl = null;
+    $('stage').innerHTML = '';
+  }
 
-  // ===== state machine over the real status =====
-  var phase = null;      // last coarse phase we reacted to
-  var saidIntake = false, saidApproval = false, ctaShown = false, reportShown = false;
-
+  // ===== terminal stage renderers =====
+  function showCTA(message){
+    clearStage();
+    var c = document.createElement('div');
+    c.className = 'card';
+    c.innerHTML = inline(message) +
+      '<div><a class="btn" href="/clients/'+slug+'/questions">Answer the questions →</a></div>';
+    $('stage').appendChild(c);
+  }
+  function showError(message){
+    clearStage();
+    var c = document.createElement('div');
+    c.className = 'card err';
+    c.innerHTML = inline(message);
+    $('stage').appendChild(c);
+  }
+  var reportShown = false;
   function showReport(markdown){
     if(reportShown) return; reportShown = true;
-    stopDrip();
+    clearStage();
+    $('teaser').className = ''; $('teaser').innerHTML = '';   // report supersedes the teaser
     $('sub').textContent = 'Your plan is ready.';
-    addBubble('🎉 <strong>Your personalised study-abroad plan is ready.</strong> Here it is — every figure is cited, and you can download it as a Word document.', 'progress');
+    var done = document.createElement('div');
+    done.className = 'card';
+    done.innerHTML = '🎉 <strong>Your personalised study-abroad plan is ready.</strong> ' +
+      'Every figure is cited, and you can download it as a Word document.';
+    $('stage').appendChild(done);
     var card = document.createElement('div');
     card.className = 'report';
-    card.innerHTML = '<div class="dlbar"><a class="btn" href="/api/clients/'+slug+'/report.docx">⬇ Download as Word document (.docx)</a></div>' + md(markdown);
-    thread.appendChild(card);
-    scrollDown();
+    card.innerHTML = '<div class="dlbar"><a class="btn" href="/api/clients/'+slug+
+      '/report.docx">⬇ Download as Word document (.docx)</a></div>' + md(markdown);
+    $('stage').appendChild(card);
   }
 
-  function enterRunning(){
-    if(phase === 'running') return; phase = 'running';
-    startDrip();
-  }
-
+  // ===== poll the real status and drive the stage =====
+  var ctaShown = false, saidApproval = false;
   function poll(){
     fetch('/api/clients/' + slug + '/status').then(function(r){
       if(!r.ok) throw new Error('status unavailable'); return r.json();
@@ -269,25 +327,27 @@
       switch(st.state){
         case 'queued':
         case 'running_intake':
-          if(!saidIntake){ saidIntake = true; addBubble(inline(st.message || 'Thanks! Reviewing your answers and mapping your grades…')); }
-          enterRunning();
+          $('sub').textContent = st.message || 'Reviewing your answers and mapping your grades…';
+          startCarousel();
+          setWorking('Reviewing your answers in the background — this usually takes a few minutes');
           break;
         case 'awaiting_answers':
-          stopDrip();
-          phase = 'answers';
+          $('sub').textContent = 'A couple of quick questions to sharpen your search.';
           if(!ctaShown){
             ctaShown = true;
-            addBubble(inline(st.message || 'A couple of quick questions to sharpen your search.') +
-              '<br><a class="btn" href="/clients/'+slug+'/questions">Answer the questions →</a>');
+            showCTA(st.message || 'A couple of quick questions to sharpen your search.');
           }
           break;
         case 'running_research':
-          enterRunning();
+          $('sub').textContent = 'Putting your study-abroad plan together…';
+          startCarousel();
+          setWorking(WORKING_DEFAULT);
           break;
         case 'awaiting_approval':
-          if(!saidApproval){ saidApproval = true; addBubble(inline(st.message || 'Almost there — your plan is being reviewed before release.')); }
-          // keep the drip going so the wait stays lively
-          enterRunning();
+          $('sub').textContent = st.message || 'Almost there — your plan is being reviewed before release.';
+          saidApproval = true;
+          startCarousel();   // keep the carousel lively through the review wait
+          setWorking('Finalising — your plan is under review before release');
           break;
         case 'done':
           fetch('/api/clients/' + slug + '/report').then(function(r){
@@ -296,21 +356,25 @@
           .catch(function(){ /* report not flushed yet; keep polling */ });
           break;
         case 'error':
-          stopDrip();
           if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
           $('sub').textContent = 'Something went wrong.';
-          addBubble(inline(st.message || st.error || 'Something went wrong. Please contact us and we’ll look into it.'), 'err');
+          showError(st.message || st.error || 'Something went wrong. Please contact us and we’ll look into it.');
           break;
         default:
-          enterRunning();
+          startCarousel();
       }
     }).catch(function(e){
-      stopDrip();
       if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
       $('sub').textContent = 'We couldn’t find this request.';
-      addBubble(inline('We can’t find this request: ' + e.message), 'err');
+      showError('We can’t find this request: ' + e.message);
     });
   }
+
+  // instant teaser ("first results"): one local KB lookup, swallow any failure
+  fetch('/api/clients/' + slug + '/teaser')
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .then(renderTeaser)
+    .catch(function(){});
 
   poll();
   pollTimer = setInterval(poll, 4000);
